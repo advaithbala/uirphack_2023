@@ -109,6 +109,22 @@ def draw_car(draw_surface: pygame.Surface, isTent):
 
 
 
+def draw_distance(draw_surface: pygame.Surface, distance):
+
+    font = pygame.font.Font('PixeloidSansBold-PKnYd.ttf', 32)
+    text = font.render("Distance: ", True, (0, 9, 0), None)
+    textRect = text.get_rect()
+    textX = 400
+    textY = 150
+    textRect.center = (textX, textY)  
+    draw_surface.blit(text, textRect)
+
+    # Format distance as 0.00 km
+    distance_text = str(distance//100) + " m"
+    distance_display = font.render(distance_text, True, (0, 0, 0))
+    distance_rect = distance_display.get_rect(center=(textX + 200, textY))
+    draw_surface.blit(distance_display, distance_rect)
+
 def draw_battery(draw_surface: pygame.Surface, battery_level, battery_max):
 
 
@@ -123,13 +139,32 @@ def draw_battery(draw_surface: pygame.Surface, battery_level, battery_max):
     pygame.draw.rect(draw_surface, (0,0,0), pygame.Rect(batteryX + batteryW, batteryY + 5, 5, 22))
 
 
-    font = pygame.font.Font('freesansbold.ttf', 32)
-    text = font.render(str(battery_level), True, (0, 150, 0), None)
+    font = pygame.font.Font('PixeloidSansBold-PKnYd.ttf', 32)
+    text = font.render(str(battery_level), True, (0, 0, 0), None)
     textRect = text.get_rect()
     textX = batteryX + batteryW // 2 * 3 + 20
     textY = batteryY + batteryH // 2
     textRect.center = (textX, textY)  
     draw_surface.blit(text, textRect)
+
+def draw_timer(draw_surface: pygame.Surface, time_left):
+    font = pygame.font.Font('PixeloidSansBold-PKnYd.ttf', 32)
+    text = font.render("Time :  ", True, (0, 0, 0), None)
+    textRect = text.get_rect()
+    textX = 400
+    textY = 100
+    textRect.center = (textX, textY)  
+    draw_surface.blit(text, textRect)
+
+    # Calculate minutes and seconds from time_left
+    minutes = time_left // 60
+    seconds = time_left % 60
+
+    # Format time as MM:SS
+    time_text = f"{minutes:02}:{seconds:02}"
+    time_display = font.render(time_text, True, (0, 0, 0))
+    time_rect = time_display.get_rect(center=(textX + 150, textY))
+    draw_surface.blit(time_display, time_rect)
 
 
 def drawQuad(
@@ -168,9 +203,13 @@ class GameWindow:
         self.crashed_CD = 0
         self.battery_max = 7777
         self.battery_level = self.battery_max
+
         self.game_started = False
-        self.tesla = pygame.transform.scale(pygame.image.load("./static/tesla.png"), (100, 100))
-        self.flame = pygame.transform.scale(pygame.image.load("./static/flame.png"), (100, 100))
+
+
+        self.tesla = pygame.transform.scale(pygame.image.load("./static/tesla.png"), (150, 100))
+        self.flame = pygame.transform.scale(pygame.image.load("./static/flame.png"), (150, 100))
+
 
         # background
         if platform.system() == "Darwin":
@@ -310,15 +349,19 @@ class GameWindow:
                 line.spriteX = -1.2
                 line.sprite = self.sprites[6]
 
-            if i % (70) == 0 or i % (120) == 0:
-                line.spriteX = random.uniform(-3, 2)
-                line.battery_pos = line.spriteX
-                line.sprite = self.sprites[7]
+
             if i % (50) == 0 or i % 65 == 0:
                 if random.random() < 0.55:  # 1% chance to place a Tesla on each line
                     line.spriteX = random.uniform(-3, 2)  # Random position on the road
                     line.sprite = self.tesla
                     line.tesla_pos = line.spriteX
+            if i % (70) == 0 or i % (120) == 0:
+                random_battery_pos = random.uniform(-3, 2)
+                line.spriteX = random_battery_pos
+                line.battery_pos = line.spriteX
+                line.sprite = self.sprites[7]
+                for prev_line in lines[-2:]:
+                    prev_line.battery_pos = random_battery_pos
 
             lines.append(line)
 
@@ -330,7 +373,12 @@ class GameWindow:
         prev_line_has_battery = False
         prev_line_has_tesla = False
 
+        # Set timer duration (in seconds)
+        timer_duration = 3 * 60  # 3 minutes
+        start_time = time.time()
+
         while True:
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -494,8 +542,9 @@ class GameWindow:
                 prev_line_has_battery = line_has_battery
             pygame.display.update()
             self.clock.tick(60)
-            
 
+
+            
 if __name__ == "__main__":
     game = GameWindow()
     game.run()
