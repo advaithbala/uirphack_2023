@@ -10,7 +10,7 @@ import sys
 
 
 # Game loop
-def repair():
+def repair(time_left):
     os.chdir(sys.path[0])
     # print(f"current path: {sys.path[0]}")
     # Initialize Pygame
@@ -92,6 +92,7 @@ def repair():
     target_score = 10
 
     # Set up timer
+    local_time_stamp = None
     start_time = None
     end_time = None
     countdown_time = 3
@@ -155,6 +156,7 @@ def repair():
                             print("Congratulations! You completed the task in", round(time_taken, 2), "seconds.")
                             mechanism_leaving = True
                             game_ended = True
+                            return 0
                             
                 dragging = None
 
@@ -265,12 +267,39 @@ def repair():
                 elif sentence_index == len(opening_sentences) + len(closing_sentences):
                     return round(time_taken, 2)
         # Draw the timer at the top right
+        
         if game_started and not game_ended:
-            current_time = round(time.time() - start_time, 2)
-            timer_text = timer_font.render("Time:", True, BLACK)
-            timer_pos = (WIDTH - timer_text.get_width() - 10, 50)
-            screen.blit(timer_text, timer_pos)
-            timer_text = timer_font.render(str(current_time) + "s", True, BLACK)
+            if local_time_stamp is None:
+                local_time_stamp = time.time()
+            print(f"time.time()  {time.time()}, local_time_stamps {local_time_stamp}")
+            print(f"time.time() - local_time_stamp {( time.time()- local_time_stamp)}")
+            if (time.time() - local_time_stamp)<1:
+                pass
+            else:
+                print(f"@@@@@time.time() - local_time_stamp {( time.time()- local_time_stamp)}")
+                time_spent = int(time.time() - local_time_stamp)
+                
+                local_time_stamp = time.time()
+
+            
+                # Calculate minutes and seconds from time_left
+                time_left = time_left - time_spent
+
+            
+            minutes = time_left // 60
+            seconds = time_left % 60
+
+            # Format time as MM:SS
+            timer_text = f"{minutes:02}:{seconds:02}"
+            # time_display = font.render(time_text, True, (0, 0, 0))
+            # time_rect = time_display.get_rect(center=(textX + 150, textY))
+            # draw_surface.blit(time_display, time_rect)
+
+            # timer_text = timer_font.render("Time:", True, BLACK)
+            # timer_pos = (WIDTH - timer_text.get_width() - 10, 50)
+            # screen.blit(timer_text, timer_pos)
+
+            timer_text = timer_font.render(timer_text, True, BLACK)
             timer_pos = (WIDTH - timer_text.get_width() - 10, 70)
             screen.blit(timer_text, timer_pos)
 
