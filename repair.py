@@ -31,19 +31,19 @@ def repair():
 
     #Font
     # Define the font for the required component title
-    required_title_font = pygame.font.SysFont("Arial", 36)
+    required_title_font = pygame.font.Font("PixeloidSansBold-PKnYd.ttf", 36)
 
     # Define the font for the score display
-    score_font = pygame.font.SysFont("PixeloidSansBold-PKnYd.ttf", 30)
+    score_font = pygame.font.Font("PixeloidSansBold-PKnYd.ttf", 30)
 
     # Countdown and start text font
-    countdown_font = pygame.font.SysFont("PixeloidSansBold-PKnYd.ttf", 40)
+    countdown_font = pygame.font.Font("PixeloidSansBold-PKnYd.ttf", 40)
 
     # Dialogue text font
-    dialogue_text_font = pygame.font.SysFont("PixeloidSansBold-PKnYd.ttf", 15)
+    dialogue_text_font = pygame.font.Font("PixeloidSansBold-PKnYd.ttf", 15)
 
     # Timer font
-    timer_font = pygame.font.SysFont("PixeloidSansBold-PKnYd.ttf", 30)
+    timer_font = pygame.font.Font("PixeloidSansBold-PKnYd.ttf", 25)
 
 
     # Load background image
@@ -104,7 +104,7 @@ def repair():
     # Load mechanism image
     # mechanism_image = pygame.image.load(image_folder + 'mechanism.png')  # Mechanism image
     #resize the img to 130,130
-    mechanism_image = pygame.transform.scale(pygame.image.load(image_folder + 'mechanism.png'), (130, 130))  # Mechanism image
+    mechanism_image = pygame.transform.scale(pygame.image.load(image_folder + 'mechanism.png'), (200, 300))  # Mechanism image
     mechanism_rect = mechanism_image.get_rect(right=WIDTH, centery=HEIGHT // 2)
     mechanism_speed = 5
     opening_sentences = [
@@ -127,9 +127,9 @@ def repair():
 
     # Dialogue window
     dialogue_window_image = pygame.transform.scale(pygame.image.load(image_folder + 'dialogue_window.png'), (200, 150))  # Dialogue window image
-    dialogue_window_rect = dialogue_window_image.get_rect(right=mechanism_rect.left - 10, centery=mechanism_rect.centery)
+    dialogue_window_rect = dialogue_window_image.get_rect(right=mechanism_rect.left - 10, centery=mechanism_rect.centery -50)
     dialogue_text = dialogue_text_font.render(opening_sentences[0], True, BLACK)
-    dialogue_text_rect = dialogue_text.get_rect(center=dialogue_window_rect.center)
+    dialogue_text_rect = dialogue_text.get_rect(center= (dialogue_window_rect.centerx, dialogue_window_rect.centery - 50))
 
     while True:
         # Event loop
@@ -182,7 +182,7 @@ def repair():
             screen.blit(component_image, pos)
 
             # Draw component title
-            font = pygame.font.SysFont("PixeloidSansBold-PKnYd.ttf", 15)
+            font = pygame.font.Font("PixeloidSansBold-PKnYd.ttf", 15)
             text = font.render(component_titles[i], True, BLACK)
             screen.blit(text, (pos[0], base+ pos[1]- component_image.get_height()-title_shift))
 
@@ -194,7 +194,7 @@ def repair():
             screen.blit(required_title_text, required_title_pos)
 
         # Draw the score at the top right
-        score_text = score_font.render("Score: " + str(score), True, WHITE)
+        score_text = score_font.render("Score: " + str(score), True, BLACK)
         score_pos = (WIDTH - score_text.get_width() - 10, 10)
         screen.blit(score_text, score_pos)
 
@@ -246,7 +246,7 @@ def repair():
                 time_stamp = time.time()
                 # print(f"Opening Sentence {opening_sentences[sentence_index]}")
                 if sentence_index < len(opening_sentences):
-                    text = textwrap.fill(opening_sentences[sentence_index], 20)
+                    text = textwrap.fill(opening_sentences[sentence_index], 15)
                     text = text.replace('\n', ' ')
                     dialogue_text = dialogue_text_font.render(text, True, BLACK)
                     dialogue_text_rect = dialogue_text.get_rect(center=dialogue_window_rect.center)
@@ -267,10 +267,10 @@ def repair():
         # Draw the timer at the top right
         if game_started and not game_ended:
             current_time = round(time.time() - start_time, 2)
-            timer_text = timer_font.render("Time:", True, WHITE)
+            timer_text = timer_font.render("Time:", True, BLACK)
             timer_pos = (WIDTH - timer_text.get_width() - 10, 50)
             screen.blit(timer_text, timer_pos)
-            timer_text = timer_font.render(str(current_time) + "s", True, WHITE)
+            timer_text = timer_font.render(str(current_time) + "s", True, BLACK)
             timer_pos = (WIDTH - timer_text.get_width() - 10, 70)
             screen.blit(timer_text, timer_pos)
 

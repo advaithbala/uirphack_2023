@@ -235,9 +235,16 @@ class GameWindow:
           
         for i in range(1, 9):
             if platform.system() == "Darwin":
-                self.sprites.append(pygame.image.load(f"images/{i}.png").convert())
+                tmp = pygame.image.load(f"images/{i}.png")
+                if i==8:
+                    tmp = pygame.transform.scale(tmp, (100,200))
+                self.sprites.append(tmp.convert())
             else: 
-                self.sprites.append(pygame.image.load(f"images/{i}.png").convert_alpha())
+                tmp = pygame.image.load(f"images/{i}.png")
+                if i==8:
+                    tmp = pygame.transform.scale(tmp,  (100,200))
+                self.sprites.append(tmp.convert_alpha())
+                
     def draw_enter_page(self):
         # Draw the transparent mask over the game window
         # mask = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
