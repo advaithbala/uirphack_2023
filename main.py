@@ -4,6 +4,7 @@ from typing import List
 import pygame
 import sys
 import random
+import platform
 
 WINDOW_WIDTH = 1024
 WINDOW_HEIGHT = 768
@@ -73,6 +74,23 @@ class Line:
         draw_surface.blit(crop_surface, (destX, destY))
 
 
+def draw_car(draw_surface: pygame.Surface):
+    car_sprite : pygame.Surface = "None"
+
+    if platform.system() == "Darwin":
+        car_sprite = pygame.image.load(f"images/R1T_white.png").convert_alpha()
+    else: 
+        car_sprite = pygame.image.load(f"images/R1T_white.png").convert()
+    
+    spriteW, spriteH = car_sprite.get_width(), car_sprite.get_height()
+    scale = 1.2
+    scaledW, scaledH = spriteW//scale, spriteH//scale
+    scaled_sprite = pygame.transform.scale(car_sprite, (scaledW, scaledH))
+
+    carX = draw_surface.get_width()//2 - scaledW//2
+    carY = draw_surface.get_width()//2 - 100
+    draw_surface.blit(scaled_sprite, (carX, carY))
+
 def drawQuad(
     surface: pygame.Surface,
     color: pygame.Color,
@@ -98,7 +116,11 @@ class GameWindow:
         self.dt = 0
 
         # background
-        self.background_image = pygame.image.load("images/bg.png").convert_alpha()
+        if platform.system() == "Darwin":
+            self.background_image = pygame.image.load("images/bg.png").convert()
+        else: 
+            self.background_image = pygame.image.load("images/bg.png").convert_alpha()
+
         self.background_image = pygame.transform.scale(
             self.background_image, (WINDOW_WIDTH, self.background_image.get_height())
         )
@@ -119,8 +141,12 @@ class GameWindow:
 
         # sprites
         self.sprites: List[pygame.Surface] = []
+          
         for i in range(1, 9):
-            self.sprites.append(pygame.image.load(f"images/{i}.png").convert_alpha())
+            if platform.system() == "Darwin":
+                self.sprites.append(pygame.image.load(f"images/{i}.png").convert())
+            else: 
+                self.sprites.append(pygame.image.load(f"images/{i}.png").convert_alpha()
 
     def run(self):
 
@@ -183,7 +209,7 @@ class GameWindow:
         N = len(lines)
         pos = 0
         playerX = 0  # player start at the center of the road
-        playerY = 1500  # camera height offset
+        playerY = 1000  # camera height offset
 
         while True:
             self.dt = time.time() - self.last_time
@@ -292,6 +318,8 @@ class GameWindow:
             # draw sprites
             for n in range(startPos + show_N_seg, startPos + 1, -1):
                 lines[n % N].drawSprite(self.window_surface)
+
+            draw_car(self.window_surface)
 
             pygame.display.update()
             self.clock.tick(60)
