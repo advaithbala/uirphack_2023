@@ -5,8 +5,8 @@ import pygame
 import sys
 import random
 import platform
-import subprocess
-
+# import subprocess
+from repair import repair
 WINDOW_WIDTH = 1024
 WINDOW_HEIGHT = 768
 
@@ -39,6 +39,7 @@ class Line:
         self.rumble_color: pygame.Color = "black"
         self.road_color: pygame.Color = "black"
 
+        self.ret = None
     def project(self, camX: int, camY: int, camZ: int):
         self.scale = camD / (self.z - camZ)
         self.X = (1 + self.scale * (self.x - camX)) * WINDOW_WIDTH / 2
@@ -373,10 +374,15 @@ class GameWindow:
 
             draw_car(self.window_surface, deployTent)
             draw_battery(self.window_surface, self.battery_level, self.battery_max)
-
+            #print car position
+            # print(f"Car position: {playerX}, {playerY}")
             if self.battery_level == 0:
-                subprocess.Popen(["python", "./repair.py"])
-                self.battery_level = self.battery_max  # Or some code to reset the game state
+                # print(f"Car position: {playerX}, {playerY}")
+                self.ret = repair()
+                # self.ret = subprocess.Popen(["python", "./repair.py"])
+                # print(f"|-> Repairing cost {self.ret} seconds")
+                if self.ret is not None:
+                    self.battery_level = self.battery_max  # Or some code to reset the game state
 
             pygame.display.update()
             self.clock.tick(60)
