@@ -5,6 +5,7 @@ import pygame
 import sys
 import random
 import platform
+import subprocess
 
 WINDOW_WIDTH = 1024
 WINDOW_HEIGHT = 768
@@ -373,9 +374,13 @@ class GameWindow:
             draw_car(self.window_surface, deployTent)
             draw_battery(self.window_surface, self.battery_level, self.battery_max)
 
+            if self.battery_level == 0:
+                subprocess.Popen(["python", "./repair.py"])
+                self.battery_level = self.battery_max  # Or some code to reset the game state
+
             pygame.display.update()
             self.clock.tick(60)
-
+            
 
 if __name__ == "__main__":
     game = GameWindow()
