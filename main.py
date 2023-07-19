@@ -201,13 +201,13 @@ class GameWindow:
         self.last_time = time.time()
         self.dt = 0
         self.crashed_CD = 0
-        self.battery_max = 1
+        self.battery_max = 7777
         self.battery_level = self.battery_max
         self.game_started = False
         self.game_ended = False
         self.tesla = pygame.transform.scale(pygame.image.load("./static/tesla.png"), (150, 100))
         self.flame = pygame.transform.scale(pygame.image.load("./static/flame.png"), (150, 100))
-        self.timer_duration = 2 * 60  # 2 minutes
+        self.timer_duration = 2 * 60 # 2 minutes
         self.time_left = self.timer_duration
         self.distance = 0 
 
@@ -590,7 +590,7 @@ class GameWindow:
                 # print(f"Car position: {playerX}, {playerY}")
                 if self.battery_level == 0:
                     # print(f"Car position: {playerX}, {playerY}")
-                    self.ret = repair(time_left)
+                    self.ret = repair(self.time_left)
                     # self.ret = subprocess.Popen(["python", "./repair.py"])
                     # print(f"|-> Repairing cost {self.ret} seconds")
                     if self.ret is not None:
@@ -618,7 +618,7 @@ class GameWindow:
                     self.crashed_CD -= 1
                     self.window_surface.blit(self.flame, (WINDOW_WIDTH//2 - 50, WINDOW_HEIGHT//2 - 50))
                 if self.battery_level == 0:
-                    self.ret = repair(time_left)
+                    self.ret = repair(self.time_left)
                     if self.ret is not None:
                         self.battery_level = self.battery_max  # Or some code to reset the game state
 
