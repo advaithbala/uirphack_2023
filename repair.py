@@ -34,16 +34,16 @@ def repair():
     required_title_font = pygame.font.SysFont("Arial", 36)
 
     # Define the font for the score display
-    score_font = pygame.font.SysFont("Arial", 30)
+    score_font = pygame.font.SysFont("PixeloidSansBold-PKnYd.ttf", 30)
 
     # Countdown and start text font
-    countdown_font = pygame.font.SysFont("Arial", 40)
+    countdown_font = pygame.font.SysFont("PixeloidSansBold-PKnYd.ttf", 40)
 
     # Dialogue text font
-    dialogue_text_font = pygame.font.SysFont("Arial", 15)
+    dialogue_text_font = pygame.font.SysFont("PixeloidSansBold-PKnYd.ttf", 15)
 
     # Timer font
-    timer_font = pygame.font.SysFont("Arial", 30)
+    timer_font = pygame.font.SysFont("PixeloidSansBold-PKnYd.ttf", 30)
 
 
     # Load background image
@@ -182,7 +182,7 @@ def repair():
             screen.blit(component_image, pos)
 
             # Draw component title
-            font = pygame.font.SysFont("Arial", 15)
+            font = pygame.font.SysFont("PixeloidSansBold-PKnYd.ttf", 15)
             text = font.render(component_titles[i], True, BLACK)
             screen.blit(text, (pos[0], base+ pos[1]- component_image.get_height()-title_shift))
 
