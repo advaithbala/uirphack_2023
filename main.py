@@ -207,8 +207,10 @@ class GameWindow:
         self.game_ended = False
         self.tesla = pygame.transform.scale(pygame.image.load("./static/tesla.png"), (150, 100))
         self.flame = pygame.transform.scale(pygame.image.load("./static/flame.png"), (150, 100))
-        self.timer_duration = 3 * 60  # 3 minutes
+        self.timer_duration = 2 * 60  # 2 minutes
         self.time_left = self.timer_duration
+        self.distance = 0 
+
         # background
         if platform.system() == "Darwin":
             self.background_image = pygame.image.load("images/bg.png").convert()
@@ -253,7 +255,7 @@ class GameWindow:
         # mask = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
         #set a transparent color 
         mask = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
-        mask.fill((0, 0, 0, 0))  # Semi-transparent black
+        mask.fill((0, 0, 0, 1))  # Semi-transparent black
         self.window_surface.blit(mask, (0, 0))
 
         # Draw the "Start Playing" button with rounded corners
@@ -437,7 +439,7 @@ class GameWindow:
                 self.game_ended = True
 
             if self.game_ended: 
-                self.draw_end_page(pos)
+                self.draw_end_page(self.distance)
             elif not self.game_started:
                 self.draw_enter_page()
             else:
@@ -494,6 +496,7 @@ class GameWindow:
                     self.battery_level = max(0, self.battery_level - 30)
 
                 pos += speed
+                self.distance += speed
 
                 # loop the circut from start to finish
                 while pos >= N * segL:
@@ -574,7 +577,7 @@ class GameWindow:
                 draw_car(self.window_surface, out_of_bounds)
                 draw_battery(self.window_surface, self.battery_level, self.battery_max)
 
-                draw_distance(self.window_surface, pos)
+                draw_distance(self.window_surface, self.distance)
 
                 # Calculate time left
                 elapsed_time = time.time() - start_time
