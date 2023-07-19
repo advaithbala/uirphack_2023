@@ -73,6 +73,23 @@ class Line:
         draw_surface.blit(crop_surface, (destX, destY))
 
 
+def draw_car(draw_surface: pygame.Surface):
+    car_sprite : pygame.Surface = "None"
+
+    if platform.system() == "Darwin":
+        car_sprite = pygame.image.load(f"images/R1T_white.png").convert_alpha()
+    else: 
+        car_sprite = pygame.image.load(f"images/R1T_white.png").convert()
+    
+    spriteW, spriteH = car_sprite.get_width(), car_sprite.get_height()
+    scale = 1.2
+    scaledW, scaledH = spriteW//scale, spriteH//scale
+    scaled_sprite = pygame.transform.scale(car_sprite, (scaledW, scaledH))
+
+    carX = draw_surface.get_width()//2 - scaledW//2
+    carY = draw_surface.get_width()//2 - 100
+    draw_surface.blit(scaled_sprite, (carX, carY))
+
 def drawQuad(
     surface: pygame.Surface,
     color: pygame.Color,
@@ -186,7 +203,7 @@ class GameWindow:
         N = len(lines)
         pos = 0
         playerX = 0  # player start at the center of the road
-        playerY = 1500  # camera height offset
+        playerY = 1000  # camera height offset
 
         while True:
             self.dt = time.time() - self.last_time
@@ -295,6 +312,8 @@ class GameWindow:
             # draw sprites
             for n in range(startPos + show_N_seg, startPos + 1, -1):
                 lines[n % N].drawSprite(self.window_surface)
+
+            draw_car(self.window_surface)
 
             pygame.display.update()
             self.clock.tick(60)
