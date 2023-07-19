@@ -4,9 +4,14 @@ import random
 import time
 import textwrap
 
+#set the env to currrent path
+import os
+import sys
+os.chdir(sys.path[0])
+# print(f"current path: {sys.path[0]}")
 # Initialize Pygame
 pygame.init()
-image_folder = './static/repair/'
+image_folder = sys.path[0]+'/static/repair/'
 # Set up some constants
 WIDTH, HEIGHT = 1024, 768
 FPS = 60
