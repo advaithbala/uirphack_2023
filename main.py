@@ -5,7 +5,7 @@ import pygame
 import sys
 import random
 import platform
-# import subprocess
+from pygame.locals import *
 from repair import repair
 WINDOW_WIDTH = 1024
 WINDOW_HEIGHT = 768
@@ -204,8 +204,12 @@ class GameWindow:
         self.battery_max = 7777
         self.battery_level = self.battery_max
 
+        self.game_started = False
+
+
         self.tesla = pygame.transform.scale(pygame.image.load("./static/tesla.png"), (150, 100))
         self.flame = pygame.transform.scale(pygame.image.load("./static/flame.png"), (150, 100))
+
 
         # background
         if platform.system() == "Darwin":
@@ -240,11 +244,61 @@ class GameWindow:
             else: 
                 self.sprites.append(pygame.image.load(f"images/{i}.png").convert_alpha())
 
-
+        #make sprite[8] of size 100x100
+        self.sprites[7] = pygame.transform.scale(self.sprites[7], (60, 90))
     prevPlayerX = 0
+    
+    def draw_enter_page(self):
+        # Draw the transparent mask over the game window
+        # mask = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+        #set a transparent color 
+        mask = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+        mask.fill((0, 0, 0, 2))  # Semi-transparent black
+        self.window_surface.blit(mask, (0, 0))
 
+        # Draw the "Start Playing" button with rounded corners
+        button_width = 200
+        button_height = 80
+        button_rect = pygame.Rect(
+            (WINDOW_WIDTH - button_width) // 2,
+            (WINDOW_HEIGHT - button_height) // 2,
+            button_width,
+            button_height
+        )
+        padding = 10  # Padding around the button
+        outer_button_rect = button_rect.inflate(padding, padding)
+
+        mouse_pos = pygame.mouse.get_pos()
+        if button_rect.collidepoint(mouse_pos):
+            button_color = (200, 200, 200)  # Light gray
+            outer_button_color = (150, 150, 150)  # Darker gray
+        else:
+            button_color = (255, 255, 255)  # White
+            outer_button_color = (200, 200, 200)  # Light gray
+
+        pygame.draw.rect(self.window_surface, outer_button_color, outer_button_rect, border_radius=10)
+        pygame.draw.rect(self.window_surface, button_color, button_rect, border_radius=10)
+
+        # Draw the "Start Playing" button text
+        font = pygame.font.Font('freesansbold.ttf', 28)  # Smaller font size
+        text = font.render("Start Playing", True, (0, 0, 0))
+        self.text_rect = text.get_rect(center=button_rect.center)
+        self.window_surface.blit(text, self.text_rect)
+
+        # Set up the font for the game title
+        title_font = pygame.font.SysFont("FixedSys", 48)
+
+        # Render the game title text
+        title_text = title_font.render("Rivian Adventure", True, (255, 255, 255))
+
+        # Get the rectangle for the rendered text
+        title_rect = title_text.get_rect(center=(WINDOW_WIDTH // 2, 100))
+
+        # Draw the game title on the window surface
+        self.window_surface.blit(title_text, title_rect)
+
+   
     def run(self):
-
         # create road lines for each segment
         lines: List[Line] = []
         for i in range(1600):
@@ -325,185 +379,167 @@ class GameWindow:
 
         while True:
 
-            out_of_bounds = (playerX > 3000) or (playerX < -3000)
-
-            self.dt = time.time() - self.last_time
-            self.last_time = time.time()
-            self.window_surface.fill((105, 205, 4))
-
-            for event in pygame.event.get([pygame.QUIT]):
+            for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                if event.type == pygame.MOUSEBUTTONUP and not self.game_started:
+                    mouse_pos = pygame.mouse.get_pos()
+                    if self.text_rect.collidepoint(mouse_pos):
+                        self.game_started = True
 
-            speed = 0
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_t]:
-                isTent = not isTent
+            if not self.game_started:
+                self.draw_enter_page()
+            else:
+                
+                self.dt = time.time() - self.last_time
+                self.last_time = time.time()
+                self.window_surface.fill((105, 205, 4))
 
-            if keys[pygame.K_UP]:
-                if self.battery_level == 0:
-                    continue
-                if(out_of_bounds):
-                    speed += segL # it has to be N integer times the segment length
-                    self.battery_level = max(0, self.battery_level - 2)
-                else:   
-                    speed += (segL * 2) # it has to be N integer times the segment length
+                speed = 0
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_t]:
+                    isTent = not isTent
+                if keys[pygame.K_UP]:
+                    if self.battery_level == 0:
+                        continue
+                    speed += segL  # it has to be N integer times the segment length
                     self.battery_level = max(0, self.battery_level - 10)
+                if keys[pygame.K_DOWN]:
+                    if self.battery_level == 0:
+                        continue              
+                    speed -= segL  # it has to be N integer times the segment length
+                if keys[pygame.K_RIGHT]:
+                    if self.battery_level == 0:
+                        continue
+                    playerX += 100
+                if keys[pygame.K_LEFT]:
+                    if self.battery_level == 0:
+                        continue
+                    playerX -= 100
+                if keys[pygame.K_w]:
+                    playerY += 100
+                if keys[pygame.K_s]:
+                    playerY -= 100
+                # avoid camera going below ground
+                if playerY < 500:
+                    playerY = 500
+                # turbo speed
+                if keys[pygame.K_TAB]:
+                    speed *= 2  # it has to be N integer times the segment length
+                    self.battery_level = max(0, self.battery_level - 30)
+                pos += speed
 
+                # loop the circut from start to finish
+                while pos >= N * segL:
+                    pos -= N * segL
+                while pos < 0:
+                    pos += N * segL
+                startPos = pos // segL
 
-            if keys[pygame.K_DOWN]:
-                if self.battery_level == 0:
-                    continue              
-                speed -= segL  # it has to be N integer times the segment length
-            if keys[pygame.K_RIGHT]:
-                if self.battery_level == 0:
-                    continue
-                playerX += 50
-            if keys[pygame.K_LEFT]:
-                if self.battery_level == 0:
-                    continue
-                playerX -= 50
-            if keys[pygame.K_w]:
-                playerY += 100
-            if keys[pygame.K_s]:
-                playerY -= 100
-            # avoid camera going below ground
-            if playerY < 500:
-                playerY = 500
-            # turbo speed
-            if keys[pygame.K_TAB]:
-                speed *= 2  # it has to be N integer times the segment length
-                self.battery_level = max(0, self.battery_level - 30)
+                x = dx = 0.0  # curve offset on x axis
 
-            pos += speed
+                camH = lines[startPos].y + playerY
+                maxy = WINDOW_HEIGHT
 
-            # loop the circut from start to finish
-            while pos >= N * segL:
-                pos -= N * segL
-            while pos < 0:
-                pos += N * segL
-            startPos = pos // segL
+                if speed > 0:
+                    self.background_rect.x -= lines[startPos].curve * 2
+                elif speed < 0:
+                    self.background_rect.x += lines[startPos].curve * 2
 
-            x = dx = 0.0  # curve offset on x axis
+                if self.background_rect.right < WINDOW_WIDTH:
+                    self.background_rect.x = -WINDOW_WIDTH
+                elif self.background_rect.left > 0:
+                    self.background_rect.x = -WINDOW_WIDTH
 
-            camH = lines[startPos].y + playerY
-            maxy = WINDOW_HEIGHT
+                self.window_surface.blit(self.background_surface, self.background_rect)
 
-            if speed > 0:
-                self.background_rect.x -= lines[startPos].curve * 2
-            elif speed < 0:
-                self.background_rect.x += lines[startPos].curve * 2
+                # draw road
+                for n in range(startPos, startPos + show_N_seg):
+                    current = lines[n % N]
+                    # loop the circut from start to finish = pos - (N * segL if n >= N else 0)
+                    current.project(playerX - x, camH, pos - (N * segL if n >= N else 0))
+                    x += dx
+                    dx += current.curve
 
-            if self.background_rect.right < WINDOW_WIDTH:
-                self.background_rect.x = -WINDOW_WIDTH
-            elif self.background_rect.left > 0:
-                self.background_rect.x = -WINDOW_WIDTH
+                    current.clip = maxy
 
-            self.window_surface.blit(self.background_surface, self.background_rect)
+                    # don't draw "above ground"
+                    if current.Y >= maxy:
+                        continue
+                    maxy = current.Y
 
-            # draw road
-            for n in range(startPos, startPos + show_N_seg):
-                current = lines[n % N]
-                # loop the circut from start to finish = pos - (N * segL if n >= N else 0)
-                current.project(playerX - x, camH, pos - (N * segL if n >= N else 0))
-                x += dx
-                dx += current.curve
+                    prev = lines[(n - 1) % N]  # previous line
 
-                current.clip = maxy
+                    drawQuad(
+                        self.window_surface,
+                        current.grass_color,
+                        0,
+                        prev.Y,
+                        WINDOW_WIDTH,
+                        0,
+                        current.Y,
+                        WINDOW_WIDTH,
+                    )
+                    drawQuad(
+                        self.window_surface,
+                        current.rumble_color,
+                        prev.X,
+                        prev.Y,
+                        prev.W * 1.2,
+                        current.X,
+                        current.Y,
+                        current.W * 1.2,
+                    )
+                    drawQuad(
+                        self.window_surface,
+                        current.road_color,
+                        prev.X,
+                        prev.Y,
+                        prev.W,
+                        current.X,
+                        current.Y,
+                        current.W,
+                    )
 
-                # don't draw "above ground"
-                if current.Y >= maxy:
-                    continue
-                maxy = current.Y
+                # draw sprites
+                for n in range(startPos + show_N_seg, startPos + 1, -1):
+                    lines[n % N].drawSprite(self.window_surface)
 
-                prev = lines[(n - 1) % N]  # previous line
+                out_of_bounds = (playerX > 3000) or (playerX < -3000)
+                deployTent = out_of_bounds and isTent
 
-                drawQuad(
-                    self.window_surface,
-                    current.grass_color,
-                    0,
-                    prev.Y,
-                    WINDOW_WIDTH,
-                    0,
-                    current.Y,
-                    WINDOW_WIDTH,
-                )
-                drawQuad(
-                    self.window_surface,
-                    current.rumble_color,
-                    prev.X,
-                    prev.Y,
-                    prev.W * 1.2,
-                    current.X,
-                    current.Y,
-                    current.W * 1.2,
-                )
-                drawQuad(
-                    self.window_surface,
-                    current.road_color,
-                    prev.X,
-                    prev.Y,
-                    prev.W,
-                    current.X,
-                    current.Y,
-                    current.W,
-                )
+                draw_car(self.window_surface, deployTent)
+                draw_battery(self.window_surface, self.battery_level, self.battery_max)
 
-            # draw sprites
-            for n in range(startPos + show_N_seg, startPos + 1, -1):
-                lines[n % N].drawSprite(self.window_surface)
+                # Pick up Battery
+                line_has_battery = lines[startPos % N].battery_pos != None
+                if not prev_line_has_battery and line_has_battery:
+                    battery_pos = lines[startPos % N].battery_pos
+                    battery_abs_pos = map_value(battery_pos, -3, 2, -1900, 1900)
+                    if abs (battery_abs_pos - playerX) < 400:
+                        self.battery_level = min(self.battery_max, self.battery_level + 1500)
 
-            draw_car(self.window_surface, out_of_bounds)
-            draw_battery(self.window_surface, self.battery_level, self.battery_max)
-
-            draw_distance(self.window_surface, pos)
-
-            # Calculate time left
-            elapsed_time = time.time() - start_time
-            time_left = max(timer_duration - int(elapsed_time), 0)
-
-            draw_timer(self.window_surface, time_left)
-            pygame.display.update()
-
-            #print car position
-            # print(f"Car position: {playerX}, {playerY}")
-            if self.battery_level == 0:
-                # print(f"Car position: {playerX}, {playerY}")
-                self.ret = repair()
-                # self.ret = subprocess.Popen(["python", "./repair.py"])
-                # print(f"|-> Repairing cost {self.ret} seconds")
-                if self.ret is not None:
-                    self.battery_level = self.battery_max  # Or some code to reset the game state
-
-            # Pick up Battery
-            line_has_battery = lines[startPos % N].battery_pos != None
-            if not prev_line_has_battery and line_has_battery:
-                battery_pos = lines[startPos % N].battery_pos
-                battery_abs_pos = map_value(battery_pos, -3, 2, -1900, 1900)
-                if abs (battery_abs_pos - playerX) < 400:
-                    self.battery_level = min(self.battery_max, self.battery_level + 1500)
-
-            # Collide with tesla
-            line_has_tesla = lines[startPos % N].tesla_pos != None
-            if not prev_line_has_tesla and line_has_tesla:
-                tesla_pos = lines[startPos % N].tesla_pos
-                tesla_abs_pos = map_value(tesla_pos, -3, 2, -1900, 1900)
-                if abs (tesla_abs_pos - (playerX)) < 700:
-                    #show the flame here
-                    self.crashed_CD = 5 
+                # Collide with tesla
+                line_has_tesla = lines[startPos % N].tesla_pos != None
+                if not prev_line_has_tesla and line_has_tesla:
+                    tesla_pos = lines[startPos % N].tesla_pos
+                    tesla_abs_pos = map_value(tesla_pos, -3, 2, -1900, 1900)
+                    if abs (tesla_abs_pos - (playerX)) < 850:
+                        #show the flame here
+                        self.crashed_CD = 5 
+                        self.window_surface.blit(self.flame, (WINDOW_WIDTH//2 - 50, WINDOW_HEIGHT//2 - 50))
+                        self.battery_level = max(0, self.battery_level - 1000)
+                if self.crashed_CD > 0:
+                    self.crashed_CD -= 1
                     self.window_surface.blit(self.flame, (WINDOW_WIDTH//2 - 50, WINDOW_HEIGHT//2 - 50))
-                    self.battery_level = max(0, self.battery_level - 1000)
-            if self.crashed_CD > 0:
-                self.crashed_CD -= 1
-                self.window_surface.blit(self.flame, (WINDOW_WIDTH//2 - 50, WINDOW_HEIGHT//2 - 50))
-            if self.battery_level == 0:
-                self.ret = repair()
-                if self.ret is not None:
-                    self.battery_level = self.battery_max  # Or some code to reset the game state
+                if self.battery_level == 0:
+                    self.ret = repair()
+                    if self.ret is not None:
+                        self.battery_level = self.battery_max  # Or some code to reset the game state
 
-            prev_line_has_tesla = line_has_tesla
-            prev_line_has_battery = line_has_battery
+                prev_line_has_tesla = line_has_tesla
+                prev_line_has_battery = line_has_battery
             pygame.display.update()
             self.clock.tick(60)
 
