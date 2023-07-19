@@ -129,6 +129,16 @@ def drawQuad(
         surface, color, [(x1 - w1, y1), (x2 - w2, y2), (x2 + w2, y2), (x1 + w1, y1)]
     )
 
+def map_value(value, leftMin, leftMax, rightMin, rightMax):
+    # Figure out how 'wide' each range is
+    leftSpan = leftMax - leftMin
+    rightSpan = rightMax - rightMin
+
+    # Convert the left range into a 0-1 range (float)
+    valueScaled = float(value - leftMin) / float(leftSpan)
+
+    # Convert the 0-1 range into a value in the right range.
+    return rightMin + (valueScaled * rightSpan)
 
 class GameWindow:
     def __init__(self):
@@ -230,12 +240,10 @@ class GameWindow:
                 line.spriteX = -1.2
                 line.sprite = self.sprites[6]
 
-            if i % 150 == 0:
-                line.spriteX = random.uniform(-1, 1)
+            if i % (150) == 0:
+                line.spriteX = random.uniform(-3, 2)
                 line.battery_pos = line.spriteX
                 line.sprite = self.sprites[7]
-            else:
-                line.battery_pos = 5.0
 
             lines.append(line)
 
@@ -243,6 +251,7 @@ class GameWindow:
         pos = 0
         playerX = 0  # player start at the center of the road
         playerY = 1000  # camera height offset
+        prev_line_has_battery = False
 
         while True:
             self.dt = time.time() - self.last_time
@@ -260,7 +269,7 @@ class GameWindow:
                 if self.battery_level == 0:
                     continue
                 speed += segL  # it has to be N integer times the segment length
-                # self.battery_level = max(0, self.battery_level - 10)
+                self.battery_level = max(0, self.battery_level - 10)
             if keys[pygame.K_DOWN]:
                 if self.battery_level == 0:
                     continue              
@@ -268,11 +277,11 @@ class GameWindow:
             if keys[pygame.K_RIGHT]:
                 if self.battery_level == 0:
                     continue
-                playerX += 200
+                playerX += 100
             if keys[pygame.K_LEFT]:
                 if self.battery_level == 0:
                     continue
-                playerX -= 200
+                playerX -= 100
             if keys[pygame.K_w]:
                 playerY += 100
             if keys[pygame.K_s]:
@@ -365,16 +374,15 @@ class GameWindow:
             draw_car(self.window_surface)
             draw_battery(self.window_surface, self.battery_level, self.battery_max)
 
-            # prevPlayerX = playerX
-            # if(pos % 150 == 0):
-            # print(str(playerX) + "  " + str(playerY) + "  " + str(lines[pos % N].battery_pos))
-            # if str(pos)[-4:] == "6800":
+            # Pick up Battery
+            line_has_battery = lines[startPos % N].battery_pos != None
+            if not prev_line_has_battery and line_has_battery:
+                battery_pos = lines[startPos % N].battery_pos
+                battery_abs_pos = map_value(battery_pos, -3, 2, -1900, 1900)
+                if abs (battery_abs_pos - playerX) < 400:
+                    self.battery_level = min(self.battery_max, self.battery_level + 1000)
 
-            if( (str(pos)[-4:] == "6800") and (((pos // 10000) - 2) % 3 == 0) ):
-                print("Collision")
-
-            # print(str(playerX) + "  " + str(playerY) + "  " + str(pos) + "  " + str( (str(pos)[-4:] == "6800") and (((pos // 10000) - 2) % 3 == 0) ) )
-
+            prev_line_has_battery = line_has_battery
             pygame.display.update()
             self.clock.tick(60)
 
