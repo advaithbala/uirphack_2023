@@ -207,7 +207,7 @@ class GameWindow:
         self.game_ended = False
         self.tesla = pygame.transform.scale(pygame.image.load("./static/tesla.png"), (150, 100))
         self.flame = pygame.transform.scale(pygame.image.load("./static/flame.png"), (150, 100))
-        self.timer_duration = 10  # 3 minutes
+        self.timer_duration = 3 * 60  # 3 minutes
         self.time_left = self.timer_duration
         # background
         if platform.system() == "Darwin":
@@ -592,7 +592,7 @@ class GameWindow:
                     battery_pos = lines[startPos % N].battery_pos
                     battery_abs_pos = map_value(battery_pos, -3, 2, -1900, 1900)
                     if abs (battery_abs_pos - playerX) < 400:
-                        self.battery_level = min(self.battery_max, self.battery_level + 500)
+                        self.battery_level = min(self.battery_max, self.battery_level + 800)
 
                 # Collide with tesla
                 line_has_tesla = lines[startPos % N].tesla_pos != None
