@@ -146,7 +146,7 @@ class GameWindow:
             if platform.system() == "Darwin":
                 self.sprites.append(pygame.image.load(f"images/{i}.png").convert())
             else: 
-                self.sprites.append(pygame.image.load(f"images/{i}.png").convert_alpha()
+                self.sprites.append(pygame.image.load(f"images/{i}.png").convert_alpha())
 
     def run(self):
 
