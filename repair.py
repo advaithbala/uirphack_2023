@@ -15,6 +15,7 @@ FPS = 60
 RED = (255, 0, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+countdown_time_remaining =3
 
 # Create the screen
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -39,6 +40,7 @@ component_images = [
 base = component_images[0].get_height()
 title_shift = 23
 component_shift = 20
+time_stamp = None
 # Define the titles of the components
 component_titles = [
     "Battery",
@@ -67,7 +69,7 @@ score_font = pygame.font.Font(None, 30)
 score = 0
 
 # Set the target score
-target_score = 50
+target_score = 10
 
 # Set up timer
 start_time = None
@@ -94,9 +96,13 @@ opening_sentences = [
     "Don't forget the clock is ticking."
 ]
 
+# opening_sentences = [
+#     '0',
+# ]
+
 closing_sentences = [
     "Great!",
-    "Now your car is back to the track again!",
+    "Now your car works again!",
     "Please drive safe!"
 ]
 
@@ -135,7 +141,7 @@ while True:
                         end_time = time.time()
                         time_taken = end_time - start_time
                         print("Congratulations! You completed the task in", round(time_taken, 2), "seconds.")
-                        mechanism_entering = True
+                        mechanism_leaving = True
                         game_ended = True
             dragging = None
 
@@ -171,7 +177,7 @@ while True:
     
     required_title_text = required_title_font.render(required_title, True, RED)
     required_title_pos = (WIDTH // 2 - required_title_text.get_width() // 2, 10)
-    if game_started:
+    if game_started and not game_ended:
         screen.blit(required_title_text, required_title_pos)
 
     # Draw the score at the top right
@@ -179,37 +185,42 @@ while True:
     score_pos = (WIDTH - score_text.get_width() - 10, 10)
     screen.blit(score_text, score_pos)
 
-    
     # Mechanism sliding animation
     screen.blit(mechanism_image, mechanism_rect)
     if not game_started and mechanism_rect.right > WIDTH - 10:
         mechanism_rect.x -= mechanism_speed
     elif game_started and not mechanism_leaving and mechanism_rect.right > 0:
-        mechanism_leaving = True
-    elif mechanism_leaving and not game_ended:
-        mechanism_rect.x -= mechanism_speed
-        dialogue_window_rect.x -= mechanism_speed
+        mechanism_rect.x += mechanism_speed
+        dialogue_window_rect.x+= mechanism_speed
+        dialogue_text_rect.x+= mechanism_speed
         if mechanism_rect.right <= 0:
             mechanism_leaving = False
-    elif game_ended and mechanism_rect.right < WIDTH:
-        mechanism_rect.x += mechanism_speed
+    elif mechanism_leaving and mechanism_rect.right < 0 and not game_ended:
+        mechanism_leaving = False
+    elif game_ended and not mechanism_entering and mechanism_rect.right > WIDTH:
+        mechanism_rect.x -= mechanism_speed
+        dialogue_window_rect.x -= mechanism_speed
+        # dialogue_text_rect.x makes it empty
+        # dialogue_text_rect = dialogue_text.get_rect(center=dialogue_window_rect.center)
+        # dialogue_text_rect.x -= mechanism_speed
+    elif game_ended and not mechanism_entering and not mechanism_rect.right > WIDTH:
+        mechanism_entering = True
 
-    if not game_started:
-        if countdown_start_time is None:
-            countdown_start_time = time.time()
-        countdown_time_remaining = countdown_time - int(time.time() - countdown_start_time)
-        if countdown_time_remaining > 0:
+    # else:
+    #     mechanism_rect.x = WIDTH 
+    if time_stamp is None:
+        time_stamp = time.time()
+    if not game_started:#count down when the sentence_index equals to the length of the opening_sentences
+        if not game_started and sentence_index == len(opening_sentences) and countdown_time_remaining>=1:
+            if countdown_start_time is None:
+                countdown_start_time = time.time()
+            countdown_time_remaining = countdown_time - int(time.time() - countdown_start_time)
             countdown_text = countdown_font.render(str(countdown_time_remaining), True, BLACK)
-            countdown_text_pos = (
-            WIDTH // 2 - countdown_text.get_width() // 2, HEIGHT // 2 - countdown_text.get_height() // 2)
             screen.blit(countdown_text, required_title_pos)
-        elif sentence_index == len(opening_sentences):
-            game_started = True
-            start_time = time.time()
-            start_text = countdown_font.render("Start!", True, WHITE)
-            start_text_pos = (WIDTH // 2 - start_text.get_width() // 2, HEIGHT // 2 - start_text.get_height() // 2)
-            screen.blit(start_text, start_text_pos)
-
+            print(f"countdown_time_remaining: {countdown_time_remaining}")
+            if countdown_time_remaining==0:
+                start_time = time.time()
+                game_started = True
     # Draw the dialogue window
     if not game_started or mechanism_leaving or mechanism_entering:
         screen.blit(dialogue_window_image, dialogue_window_rect)
@@ -217,18 +228,24 @@ while True:
 
     # Update dialogue text
     if not game_started and sentence_index < len(opening_sentences):
-        print(f'sentence_index: {sentence_index}')
+        # sentence_index += 1
+        # print(f'sentence_index: {sentence_index}')
         # use this condition to check if the time is up
-        if time.time() - countdown_start_time > sentence_index + 1:
+        if time.time() - time_stamp >1:
             sentence_index += 1
+            time_stamp = time.time()
             # print(f"Opening Sentence {opening_sentences[sentence_index]}")
             if sentence_index < len(opening_sentences):
+                # print("@22s")
                 text = textwrap.fill(opening_sentences[sentence_index], 20)
                 dialogue_text = dialogue_text_font.render(text, True, BLACK)
                 dialogue_text_rect = dialogue_text.get_rect(center=dialogue_window_rect.center)
 
     if game_ended and mechanism_entering and sentence_index < len(opening_sentences) + len(closing_sentences):
-        if end_time is not None and time.time() - end_time > sentence_index - len(opening_sentences) + 1:
+        # time_stamp = end_time
+        if end_time is not None and time.time() - end_time > 1.5:
+            end_time = time.time()
+        # if end_time is not None and time.time() - end_time > sentence_index - len(opening_sentences) + 1:
             sentence_index += 1
             if sentence_index < len(opening_sentences) + len(closing_sentences):
                 #use textwrap to wrap the text, and set the width of the text to 20
@@ -238,13 +255,14 @@ while True:
             elif sentence_index == len(opening_sentences) + len(closing_sentences):
                 pygame.quit()
                 sys.exit()
-
-
     # Draw the timer at the top right
     if game_started and not game_ended:
         current_time = round(time.time() - start_time, 2)
-        timer_text = timer_font.render("Time: \n" + str(current_time) + "s", True, WHITE)
+        timer_text = timer_font.render("Time:", True, WHITE)
         timer_pos = (WIDTH - timer_text.get_width() - 10, 50)
+        screen.blit(timer_text, timer_pos)
+        timer_text = timer_font.render(str(current_time) + "s", True, WHITE)
+        timer_pos = (WIDTH - timer_text.get_width() - 10, 70)
         screen.blit(timer_text, timer_pos)
 
     # Flip the display
