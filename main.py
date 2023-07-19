@@ -265,7 +265,7 @@ class GameWindow:
                 line.battery_pos = line.spriteX
                 line.sprite = self.sprites[7]
             if i % (50) == 0 or i % 65 == 0:
-                if random.random() < 0.7:  # 1% chance to place a Tesla on each line
+                if random.random() < 0.55:  # 1% chance to place a Tesla on each line
                     line.spriteX = random.uniform(-3, 2)  # Random position on the road
                     line.sprite = self.tesla
                     line.tesla_pos = line.spriteX
@@ -419,7 +419,7 @@ class GameWindow:
             if not prev_line_has_tesla and line_has_tesla:
                 tesla_pos = lines[startPos % N].tesla_pos
                 tesla_abs_pos = map_value(tesla_pos, -3, 2, -1900, 1900)
-                if abs (tesla_abs_pos - (playerX)) < 1000:
+                if abs (tesla_abs_pos - (playerX)) < 700:
                     #show the flame here
                     self.crashed_CD = 5 
                     self.window_surface.blit(self.flame, (WINDOW_WIDTH//2 - 50, WINDOW_HEIGHT//2 - 50))
