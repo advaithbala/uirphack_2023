@@ -76,11 +76,7 @@ class Line:
 
 def draw_car(draw_surface: pygame.Surface):
     car_sprite : pygame.Surface = "None"
-
-    if platform.system() == "Darwin":
-        car_sprite = pygame.image.load(f"images/R1T_white.png").convert_alpha()
-    else: 
-        car_sprite = pygame.image.load(f"images/R1T_white.png").convert()
+    car_sprite = pygame.image.load(f"images/R1T_white.png").convert_alpha()
     
     spriteW, spriteH = car_sprite.get_width(), car_sprite.get_height()
     scale = 1.2
