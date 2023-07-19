@@ -3,6 +3,7 @@ import time
 from typing import List
 import pygame
 import sys
+import random
 
 WINDOW_WIDTH = 1024
 WINDOW_HEIGHT = 768
@@ -118,7 +119,7 @@ class GameWindow:
 
         # sprites
         self.sprites: List[pygame.Surface] = []
-        for i in range(1, 8):
+        for i in range(1, 9):
             self.sprites.append(pygame.image.load(f"images/{i}.png").convert_alpha())
 
     def run(self):
@@ -172,6 +173,10 @@ class GameWindow:
             if i == 400:
                 line.spriteX = -1.2
                 line.sprite = self.sprites[6]
+
+            if i % 150 == 0:
+                line.spriteX = random.uniform(-1, 1)
+                line.sprite = self.sprites[7]
 
             lines.append(line)
 
