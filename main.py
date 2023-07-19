@@ -87,6 +87,31 @@ def draw_car(draw_surface: pygame.Surface):
     carY = draw_surface.get_width()//2 - 100
     draw_surface.blit(scaled_sprite, (carX, carY))
 
+
+
+def draw_battery(draw_surface: pygame.Surface, battery_level, battery_max):
+
+
+    # Battery icon
+    batteryW = 80
+    batteryH = 32
+    batteryX = draw_surface.get_width() - 200
+    batteryY = 32
+    charged_level = int(batteryW * (battery_level / battery_max))
+    pygame.draw.rect(draw_surface, (0,150,0), pygame.Rect(batteryX, batteryY, charged_level, batteryH))
+    pygame.draw.rect(draw_surface, (0,0,0), pygame.Rect(batteryX, batteryY, batteryW, batteryH), 2, 5)
+    pygame.draw.rect(draw_surface, (0,0,0), pygame.Rect(batteryX + batteryW, batteryY + 5, 5, 22))
+
+
+    font = pygame.font.Font('freesansbold.ttf', 32)
+    text = font.render(str(battery_level), True, (0, 150, 0), None)
+    textRect = text.get_rect()
+    textX = batteryX + batteryW // 2 * 3 + 20
+    textY = batteryY + batteryH // 2
+    textRect.center = (textX, textY)  
+    draw_surface.blit(text, textRect)
+
+
 def drawQuad(
     surface: pygame.Surface,
     color: pygame.Color,
@@ -105,11 +130,14 @@ def drawQuad(
 class GameWindow:
     def __init__(self):
         pygame.init()
-        pygame.display.set_caption("Racing Pseudo 3D")
+        pygame.display.set_caption("Rivian Adventure")
         self.window_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         self.clock = pygame.time.Clock()
         self.last_time = time.time()
         self.dt = 0
+
+        self.battery_max = 7777
+        self.battery_level = self.battery_max
 
         # background
         if platform.system() == "Darwin":
@@ -220,12 +248,21 @@ class GameWindow:
             speed = 0
             keys = pygame.key.get_pressed()
             if keys[pygame.K_UP]:
+                if self.battery_level == 0:
+                    continue
                 speed += segL  # it has to be N integer times the segment length
+                self.battery_level = max(0, self.battery_level - 10)
             if keys[pygame.K_DOWN]:
+                if self.battery_level == 0:
+                    continue              
                 speed -= segL  # it has to be N integer times the segment length
             if keys[pygame.K_RIGHT]:
+                if self.battery_level == 0:
+                    continue
                 playerX += 200
             if keys[pygame.K_LEFT]:
+                if self.battery_level == 0:
+                    continue
                 playerX -= 200
             if keys[pygame.K_w]:
                 playerY += 100
@@ -237,6 +274,7 @@ class GameWindow:
             # turbo speed
             if keys[pygame.K_TAB]:
                 speed *= 2  # it has to be N integer times the segment length
+                self.battery_level = max(0, self.battery_level - 30)
             pos += speed
 
             # loop the circut from start to finish
@@ -316,6 +354,7 @@ class GameWindow:
                 lines[n % N].drawSprite(self.window_surface)
 
             draw_car(self.window_surface)
+            draw_battery(self.window_surface, self.battery_level, self.battery_max)
 
             pygame.display.update()
             self.clock.tick(60)
