@@ -368,8 +368,12 @@ class GameWindow:
             # prevPlayerX = playerX
             # if(pos % 150 == 0):
             # print(str(playerX) + "  " + str(playerY) + "  " + str(lines[pos % N].battery_pos))
-            if str(pos)[-4:] == "6800":
-                print(str(playerX) + "  " + str(playerY) + "  " + str(pos) + "  " + str(lines[pos % N].battery_pos))
+            # if str(pos)[-4:] == "6800":
+
+            if( (str(pos)[-4:] == "6800") and (((pos // 10000) - 2) % 3 == 0) ):
+                print("Collision")
+
+            # print(str(playerX) + "  " + str(playerY) + "  " + str(pos) + "  " + str( (str(pos)[-4:] == "6800") and (((pos // 10000) - 2) % 3 == 0) ) )
 
             pygame.display.update()
             self.clock.tick(60)
