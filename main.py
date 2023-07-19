@@ -248,6 +248,9 @@ class GameWindow:
         playerY = 1000  # camera height offset
 
         while True:
+
+            out_of_bounds = (playerX > 3000) or (playerX < -3000)
+
             self.dt = time.time() - self.last_time
             self.last_time = time.time()
             self.window_surface.fill((105, 205, 4))
@@ -261,11 +264,18 @@ class GameWindow:
             keys = pygame.key.get_pressed()
             if keys[pygame.K_t]:
                 isTent = not isTent
+
             if keys[pygame.K_UP]:
                 if self.battery_level == 0:
                     continue
-                speed += segL  # it has to be N integer times the segment length
-                self.battery_level = max(0, self.battery_level - 10)
+                if(out_of_bounds):
+                    speed += segL # it has to be N integer times the segment length
+                    self.battery_level = max(0, self.battery_level - 5)
+                else:   
+                    speed += (segL * 2) # it has to be N integer times the segment length
+                    self.battery_level = max(0, self.battery_level - 10)
+
+
             if keys[pygame.K_DOWN]:
                 if self.battery_level == 0:
                     continue              
@@ -289,6 +299,7 @@ class GameWindow:
             if keys[pygame.K_TAB]:
                 speed *= 2  # it has to be N integer times the segment length
                 self.battery_level = max(0, self.battery_level - 30)
+
             pos += speed
 
             # loop the circut from start to finish
@@ -367,10 +378,7 @@ class GameWindow:
             for n in range(startPos + show_N_seg, startPos + 1, -1):
                 lines[n % N].drawSprite(self.window_surface)
 
-            out_of_bounds = (playerX > 3000) or (playerX < -3000)
-            deployTent = out_of_bounds and isTent
-
-            draw_car(self.window_surface, deployTent)
+            draw_car(self.window_surface, out_of_bounds)
             draw_battery(self.window_surface, self.battery_level, self.battery_max)
 
             pygame.display.update()
