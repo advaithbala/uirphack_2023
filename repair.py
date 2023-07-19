@@ -20,6 +20,23 @@ countdown_time_remaining =3
 # Create the screen
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
+#Font
+# Define the font for the required component title
+required_title_font = pygame.font.SysFont("Arial", 36)
+
+# Define the font for the score display
+score_font = pygame.font.SysFont("Arial", 30)
+
+# Countdown and start text font
+countdown_font = pygame.font.SysFont("Arial", 40)
+
+# Dialogue text font
+dialogue_text_font = pygame.font.SysFont("Arial", 15)
+
+# Timer font
+timer_font = pygame.font.SysFont("Arial", 30)
+
+
 # Load background image
 bg_image = pygame.image.load(image_folder + 'factory.png')  # Background image
 bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
@@ -59,12 +76,6 @@ dragging = None
 # Define the required component title
 required_title = random.choice(component_titles)  # Randomly select a required component title
 
-# Define the font for the required component title
-required_title_font = pygame.font.Font(None, 36)
-
-# Define the font for the score display
-score_font = pygame.font.Font(None, 30)
-
 # Initialize score
 score = 0
 
@@ -74,7 +85,6 @@ target_score = 10
 # Set up timer
 start_time = None
 end_time = None
-timer_font = pygame.font.Font(None, 30)
 countdown_time = 3
 countdown_start_time = None
 game_started = False
@@ -89,32 +99,25 @@ mechanism_image = pygame.transform.scale(pygame.image.load(image_folder + 'mecha
 mechanism_rect = mechanism_image.get_rect(right=WIDTH, centery=HEIGHT // 2)
 mechanism_speed = 5
 opening_sentences = [
-    "Unfortunately, ",
-    "Your car is damaged.",
+    "Unfortunately",
+    "Your car is damaged",
     "But no worries",
-    "Let's fix it ASAP.",
+    "Let's fix it ASAP",
     "Don't forget the clock is ticking."
 ]
-
-# opening_sentences = [
-#     '0',
-# ]
 
 closing_sentences = [
     "Great!",
     "Now your car works again!",
+    "Please drive safe!",
     "Please drive safe!"
 ]
 
 sentence_index = 0
 
-# Countdown and start text font
-countdown_font = pygame.font.Font(None, 60)
-
 # Dialogue window
 dialogue_window_image = pygame.transform.scale(pygame.image.load(image_folder + 'dialogue_window.png'), (200, 150))  # Dialogue window image
 dialogue_window_rect = dialogue_window_image.get_rect(right=mechanism_rect.left - 10, centery=mechanism_rect.centery)
-dialogue_text_font = pygame.font.Font(None, 24)
 dialogue_text = dialogue_text_font.render(opening_sentences[0], True, BLACK)
 dialogue_text_rect = dialogue_text.get_rect(center=dialogue_window_rect.center)
 
@@ -169,7 +172,7 @@ while True:
         screen.blit(component_image, pos)
 
         # Draw component title
-        font = pygame.font.Font(None, 30)
+        font = pygame.font.SysFont("Arial", 15)
         text = font.render(component_titles[i], True, RED)
         screen.blit(text, (pos[0], base+ pos[1]- component_image.get_height()-title_shift))
 
@@ -200,9 +203,6 @@ while True:
     elif game_ended and not mechanism_entering and mechanism_rect.right > WIDTH:
         mechanism_rect.x -= mechanism_speed
         dialogue_window_rect.x -= mechanism_speed
-        # dialogue_text_rect.x makes it empty
-        # dialogue_text_rect = dialogue_text.get_rect(center=dialogue_window_rect.center)
-        # dialogue_text_rect.x -= mechanism_speed
     elif game_ended and not mechanism_entering and not mechanism_rect.right > WIDTH:
         mechanism_entering = True
 
@@ -236,8 +236,8 @@ while True:
             time_stamp = time.time()
             # print(f"Opening Sentence {opening_sentences[sentence_index]}")
             if sentence_index < len(opening_sentences):
-                # print("@22s")
                 text = textwrap.fill(opening_sentences[sentence_index], 20)
+                text = text.replace('\n', ' ')
                 dialogue_text = dialogue_text_font.render(text, True, BLACK)
                 dialogue_text_rect = dialogue_text.get_rect(center=dialogue_window_rect.center)
 
@@ -245,11 +245,11 @@ while True:
         # time_stamp = end_time
         if end_time is not None and time.time() - end_time > 1.5:
             end_time = time.time()
-        # if end_time is not None and time.time() - end_time > sentence_index - len(opening_sentences) + 1:
             sentence_index += 1
             if sentence_index < len(opening_sentences) + len(closing_sentences):
                 #use textwrap to wrap the text, and set the width of the text to 20
                 text = textwrap.fill(closing_sentences[sentence_index - len(opening_sentences)], 10)
+                text = text.replace('\n', ' ')
                 dialogue_text = dialogue_text_font.render(text, True, BLACK)
                 dialogue_text_rect = dialogue_text.get_rect(center=dialogue_window_rect.center)
             elif sentence_index == len(opening_sentences) + len(closing_sentences):
