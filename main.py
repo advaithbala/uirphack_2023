@@ -3,6 +3,7 @@ import time
 from typing import List
 import pygame
 import sys
+import os
 import random
 import platform
 # import subprocess
@@ -203,9 +204,11 @@ class GameWindow:
         self.battery_max = 7777
         self.battery_level = self.battery_max
         self.game_started = False
+        self.game_ended = False
         self.tesla = pygame.transform.scale(pygame.image.load("./static/tesla.png"), (150, 100))
         self.flame = pygame.transform.scale(pygame.image.load("./static/flame.png"), (150, 100))
-
+        self.timer_duration = 10  # 3 minutes
+        self.time_left = self.timer_duration
         # background
         if platform.system() == "Darwin":
             self.background_image = pygame.image.load("images/bg.png").convert()
@@ -287,6 +290,43 @@ class GameWindow:
         # Draw the game title on the window surface
         self.window_surface.blit(title_text, title_rect)
 
+    def draw_end_page(self, dist):
+        mask = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+        mask.fill((0, 0, 0, 0))  # Semi-transparent black
+        self.window_surface.blit(mask, (0, 0))
+
+        # Draw the "Start Playing" button with rounded corners
+        button_width = 250
+        button_height = 80
+        button_rect = pygame.Rect(
+            (WINDOW_WIDTH - button_width) // 2,
+            (WINDOW_HEIGHT - button_height) // 2,
+            button_width,
+            button_height
+        )
+        padding = 10  # Padding around the button
+        outer_button_rect = button_rect.inflate(padding, padding)
+
+        mouse_pos = pygame.mouse.get_pos()
+        if button_rect.collidepoint(mouse_pos):
+            button_color = (200, 200, 200)  # Light gray
+            outer_button_color = (150, 150, 150)  # Darker gray
+        else:
+            button_color = (255, 255, 255)  # White
+            outer_button_color = (200, 200, 200)  # Light gray
+
+        pygame.draw.rect(self.window_surface, outer_button_color, outer_button_rect, border_radius=10)
+        pygame.draw.rect(self.window_surface, button_color, button_rect, border_radius=10)
+
+        # Draw the play again button
+        font = pygame.font.Font('PixeloidSansBold-PKnYd.ttf', 28)  # Smaller font size
+        text = font.render("Play Again", True, (0, 0, 0))
+        self.play_again_rect = text.get_rect(center=button_rect.center)
+        self.window_surface.blit(text, self.play_again_rect)
+
+        draw_distance(self.window_surface, dist)
+        draw_timer(self.window_surface, self.time_left)
+
     prevPlayerX = 0
 
     def run(self):
@@ -366,10 +406,11 @@ class GameWindow:
         prev_line_has_tesla = False
 
         # Set timer duration (in seconds)
-        timer_duration = 3 * 60  # 3 minutes
+
         start_time = time.time()
 
         while True:
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -378,8 +419,19 @@ class GameWindow:
                     mouse_pos = pygame.mouse.get_pos()
                     if self.text_rect.collidepoint(mouse_pos):
                         self.game_started = True
+                if event.type == pygame.MOUSEBUTTONUP and self.game_ended:
+                    mouse_pos = pygame.mouse.get_pos()
+                    if self.play_again_rect.collidepoint(mouse_pos):
+                        pygame.quit()
+                        python = sys.executable
+                        os.execl(python, python, * sys.argv)
 
-            if not self.game_started:
+            if self.time_left == 0:
+                self.game_ended = True
+
+            if self.game_ended: 
+                self.draw_end_page(pos)
+            elif not self.game_started:
                 self.draw_enter_page()
             else:
 
@@ -417,11 +469,11 @@ class GameWindow:
                 if keys[pygame.K_RIGHT]:
                     if self.battery_level == 0:
                         continue
-                    playerX += 50
+                    playerX += 75
                 if keys[pygame.K_LEFT]:
                     if self.battery_level == 0:
                         continue
-                    playerX -= 50
+                    playerX -= 75
                 if keys[pygame.K_w]:
                     playerY += 100
                 if keys[pygame.K_s]:
@@ -519,9 +571,9 @@ class GameWindow:
 
                 # Calculate time left
                 elapsed_time = time.time() - start_time
-                time_left = max(timer_duration - int(elapsed_time), 0)
+                self.time_left = max(self.timer_duration - int(elapsed_time), 0)
 
-                draw_timer(self.window_surface, time_left)
+                draw_timer(self.window_surface, self.time_left)
                 pygame.display.update()
 
                 #print car position
@@ -562,6 +614,7 @@ class GameWindow:
 
                 prev_line_has_tesla = line_has_tesla
                 prev_line_has_battery = line_has_battery
+
             pygame.display.update()
             self.clock.tick(60)
 
