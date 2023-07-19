@@ -211,8 +211,10 @@ class GameWindow:
     
     def draw_enter_page(self):
         # Draw the transparent mask over the game window
+        # mask = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+        #set a transparent color 
         mask = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
-        mask.fill((0, 0, 0, 12))  # Semi-transparent black
+        mask.fill((0, 0, 0, 2))  # Semi-transparent black
         self.window_surface.blit(mask, (0, 0))
 
         # Draw the "Start Playing" button with rounded corners
