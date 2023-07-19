@@ -38,6 +38,9 @@ class Line:
         self.rumble_color: pygame.Color = "black"
         self.road_color: pygame.Color = "black"
 
+        self.battery_z_pos : float = None
+        self.battery_pos : float =  None
+
     def project(self, camX: int, camY: int, camZ: int):
         self.scale = camD / (self.z - camZ)
         self.X = (1 + self.scale * (self.x - camX)) * WINDOW_WIDTH / 2
@@ -172,6 +175,9 @@ class GameWindow:
             else: 
                 self.sprites.append(pygame.image.load(f"images/{i}.png").convert_alpha())
 
+
+    prevPlayerX = 0
+
     def run(self):
 
         # create road lines for each segment
@@ -226,7 +232,10 @@ class GameWindow:
 
             if i % 150 == 0:
                 line.spriteX = random.uniform(-1, 1)
+                line.battery_pos = line.spriteX
                 line.sprite = self.sprites[7]
+            else:
+                line.battery_pos = 5.0
 
             lines.append(line)
 
@@ -251,7 +260,7 @@ class GameWindow:
                 if self.battery_level == 0:
                     continue
                 speed += segL  # it has to be N integer times the segment length
-                self.battery_level = max(0, self.battery_level - 10)
+                # self.battery_level = max(0, self.battery_level - 10)
             if keys[pygame.K_DOWN]:
                 if self.battery_level == 0:
                     continue              
@@ -355,6 +364,12 @@ class GameWindow:
 
             draw_car(self.window_surface)
             draw_battery(self.window_surface, self.battery_level, self.battery_max)
+
+            # prevPlayerX = playerX
+            # if(pos % 150 == 0):
+            # print(str(playerX) + "  " + str(playerY) + "  " + str(lines[pos % N].battery_pos))
+            if str(pos)[-4:] == "6800":
+                print(str(playerX) + "  " + str(playerY) + "  " + str(pos) + "  " + str(lines[pos % N].battery_pos))
 
             pygame.display.update()
             self.clock.tick(60)
