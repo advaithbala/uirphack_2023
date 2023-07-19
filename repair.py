@@ -126,7 +126,7 @@ def repair():
     sentence_index = 0
 
     # Dialogue window
-    dialogue_window_image = pygame.transform.scale(pygame.image.load(image_folder + 'dialogue_window.png'), (200, 150))  # Dialogue window image
+    dialogue_window_image = pygame.transform.scale(pygame.image.load(image_folder + 'dialogue_window.png'), (250, 200))  # Dialogue window image
     dialogue_window_rect = dialogue_window_image.get_rect(right=mechanism_rect.left - 10, centery=mechanism_rect.centery -50)
     dialogue_text = dialogue_text_font.render(opening_sentences[0], True, BLACK)
     dialogue_text_rect = dialogue_text.get_rect(center= (dialogue_window_rect.centerx, dialogue_window_rect.centery - 50))
