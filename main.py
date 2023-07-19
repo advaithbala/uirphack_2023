@@ -22,7 +22,6 @@ black_rumble = pygame.Color(0, 0, 0)
 dark_road = pygame.Color(105, 105, 105)
 light_road = pygame.Color(107, 107, 107)
 
-
 class Line:
     def __init__(self, i):
         self.i = i
@@ -41,6 +40,11 @@ class Line:
 
         self.battery_z_pos : float = None
         self.battery_pos : float =  None
+
+        self.tesla_pos_x : float = None
+        self.tesla_pos_y : float = None
+        self.tesla_pos: float = None
+
         self.ret = None
         
     def project(self, camX: int, camY: int, camZ: int):
@@ -161,9 +165,12 @@ class GameWindow:
         self.clock = pygame.time.Clock()
         self.last_time = time.time()
         self.dt = 0
-
+        self.crashed_CD = 0
         self.battery_max = 7777
         self.battery_level = self.battery_max
+
+        self.tesla = pygame.transform.scale(pygame.image.load("./static/tesla.png"), (100, 100))
+        self.flame = pygame.transform.scale(pygame.image.load("./static/flame.png"), (100, 100))
 
         # background
         if platform.system() == "Darwin":
@@ -253,10 +260,15 @@ class GameWindow:
                 line.spriteX = -1.2
                 line.sprite = self.sprites[6]
 
-            if i % (150) == 0:
+            if i % (70) == 0 or i % (120) == 0:
                 line.spriteX = random.uniform(-3, 2)
                 line.battery_pos = line.spriteX
                 line.sprite = self.sprites[7]
+            if i % (50) == 0 or i % 65 == 0:
+                if random.random() < 0.7:  # 1% chance to place a Tesla on each line
+                    line.spriteX = random.uniform(-3, 2)  # Random position on the road
+                    line.sprite = self.tesla
+                    line.tesla_pos = line.spriteX
 
             lines.append(line)
 
@@ -266,6 +278,7 @@ class GameWindow:
         playerX = 0  # player start at the center of the road
         playerY = 1000  # camera height offset
         prev_line_has_battery = False
+        prev_line_has_tesla = False
 
         while True:
             self.dt = time.time() - self.last_time
@@ -392,15 +405,6 @@ class GameWindow:
 
             draw_car(self.window_surface, deployTent)
             draw_battery(self.window_surface, self.battery_level, self.battery_max)
-            #print car position
-            # print(f"Car position: {playerX}, {playerY}")
-            if self.battery_level == 0:
-                # print(f"Car position: {playerX}, {playerY}")
-                self.ret = repair()
-                # self.ret = subprocess.Popen(["python", "./repair.py"])
-                # print(f"|-> Repairing cost {self.ret} seconds")
-                if self.ret is not None:
-                    self.battery_level = self.battery_max  # Or some code to reset the game state
 
             # Pick up Battery
             line_has_battery = lines[startPos % N].battery_pos != None
@@ -410,6 +414,25 @@ class GameWindow:
                 if abs (battery_abs_pos - playerX) < 400:
                     self.battery_level = min(self.battery_max, self.battery_level + 1500)
 
+            # Collide with tesla
+            line_has_tesla = lines[startPos % N].tesla_pos != None
+            if not prev_line_has_tesla and line_has_tesla:
+                tesla_pos = lines[startPos % N].tesla_pos
+                tesla_abs_pos = map_value(tesla_pos, -3, 2, -1900, 1900)
+                if abs (tesla_abs_pos - (playerX)) < 1000:
+                    #show the flame here
+                    self.crashed_CD = 5 
+                    self.window_surface.blit(self.flame, (WINDOW_WIDTH//2 - 50, WINDOW_HEIGHT//2 - 50))
+                    self.battery_level = max(0, self.battery_level - 1000)
+            if self.crashed_CD > 0:
+                self.crashed_CD -= 1
+                self.window_surface.blit(self.flame, (WINDOW_WIDTH//2 - 50, WINDOW_HEIGHT//2 - 50))
+            if self.battery_level == 0:
+                self.ret = repair()
+                if self.ret is not None:
+                    self.battery_level = self.battery_max  # Or some code to reset the game state
+
+            prev_line_has_tesla = line_has_tesla
             prev_line_has_battery = line_has_battery
             pygame.display.update()
             self.clock.tick(60)

@@ -109,11 +109,11 @@ def repair():
     mechanism_speed = 5
     opening_sentences = [
         "Unfortunately",
-        # "Your car is damaged",
-        "Running out battery caused some damage",
+        "Your car is damaged",
+        # "Ruxsome damage",
         "But no worries",
         "Let's fix it ASAP",
-        "Don't forget the clock is ticking."
+        # "Don't forget the clock is ticking."
     ]
 
     closing_sentences = [
@@ -134,9 +134,9 @@ def repair():
     while True:
         # Event loop
         for event in pygame.event.get():
-            # if event.type == pygame.QUIT:
-                # pygame.quit()
-                # sys.exit()
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for i, component_image in enumerate(component_images):
                     if pygame.Rect(10, 10 + i * 110, component_image.get_width(), component_image.get_height()).collidepoint(
@@ -183,12 +183,12 @@ def repair():
 
             # Draw component title
             font = pygame.font.SysFont("Arial", 15)
-            text = font.render(component_titles[i], True, RED)
+            text = font.render(component_titles[i], True, BLACK)
             screen.blit(text, (pos[0], base+ pos[1]- component_image.get_height()-title_shift))
 
         # Draw the required component title at the center-top
         
-        required_title_text = required_title_font.render(required_title, True, RED)
+        required_title_text = required_title_font.render(required_title, True, BLACK)
         required_title_pos = (WIDTH // 2 - required_title_text.get_width() // 2, 10)
         if game_started and not game_ended:
             screen.blit(required_title_text, required_title_pos)
@@ -241,7 +241,7 @@ def repair():
             # sentence_index += 1
             # print(f'sentence_index: {sentence_index}')
             # use this condition to check if the time is up
-            if time.time() - time_stamp >1:
+            if time.time() - time_stamp >0.7:
                 sentence_index += 1
                 time_stamp = time.time()
                 # print(f"Opening Sentence {opening_sentences[sentence_index]}")
@@ -253,7 +253,7 @@ def repair():
 
         if game_ended and mechanism_entering and sentence_index < len(opening_sentences) + len(closing_sentences):
             # time_stamp = end_time
-            if end_time is not None and time.time() - end_time > 1.5:
+            if end_time is not None and time.time() - end_time > 0.7:
                 end_time = time.time()
                 sentence_index += 1
                 if sentence_index < len(opening_sentences) + len(closing_sentences):
