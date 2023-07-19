@@ -22,11 +22,20 @@ car_image = pygame.image.load(image_folder+'car.png')  # Car image
 
 # Load component images
 component_images = [
-    pygame.image.load(image_folder+'battery.png'),       # Battery component
-    pygame.image.load(image_folder+'motor.png'),         # Motor component
-    pygame.image.load(image_folder+'chargingPort.png'),  # Charging port component
-    pygame.image.load(image_folder+'chair.png'),         # Chair component
-    pygame.image.load(image_folder+'wiringSystem.png')   # Wiring system component
+    pygame.transform.scale(pygame.image.load(image_folder+'battery.png'), (100, 100)),       # Battery component
+    pygame.transform.scale(pygame.image.load(image_folder+'motor.png'), (100, 100)),         # Motor component
+    pygame.transform.scale(pygame.image.load(image_folder+'chair.png'), (100, 100)),        # Charging port component
+    pygame.transform.scale(pygame.image.load(image_folder+'tire.png'), (100, 100)),         # Chair component
+    pygame.transform.scale(pygame.image.load(image_folder+'headlight.png'), (100, 100))     # Wiring system component
+]
+
+# Define the titles of the components
+component_titles = [
+    "Battery",
+    "Motor",
+    "Charging Port",
+    "Tire",
+    "Wiring System"
 ]
 
 # Initialize car status
@@ -44,12 +53,13 @@ while True:
             sys.exit()
         elif event.type == pygame.MOUSEBUTTONDOWN:
             for i, component_image in enumerate(component_images):
-                if pygame.Rect(10, 10 + i * 60, component_image.get_width(), component_image.get_height()).collidepoint(event.pos):
+                if pygame.Rect(10, 10 + i * 110, component_image.get_width(), component_image.get_height()).collidepoint(event.pos):
                     dragging = i
                     break
         elif event.type == pygame.MOUSEBUTTONUP:
             if dragging is not None and car_rect.collidepoint(event.pos):
-                car_status = min(car_status + 20, 100)  # Increase car status by 20, up to a maximum of 100
+                if dragging == 1:  # Adjust the index to match the correct component
+                    print("Correct component dragged!")  # Replace with your desired action
             dragging = None
 
     # Draw the background
@@ -59,13 +69,18 @@ while True:
     car_rect = car_image.get_rect(center=(WIDTH // 2, HEIGHT // 2))
     screen.blit(car_image, car_rect)
 
-    # Draw the components
+    # Draw the components with titles
     for i, component_image in enumerate(component_images):
         if dragging == i:
             pos = pygame.mouse.get_pos()
         else:
-            pos = (10, 10 + i * 60)
+            pos = (10, 10 + i * 110)  # Adjust the vertical spacing to accommodate the larger component size
         screen.blit(component_image, pos)
+
+        # Draw component title
+        font = pygame.font.Font(None, 30)
+        text = font.render(component_titles[i], True, RED)
+        screen.blit(text, (pos[0] + component_image.get_width() + 10, pos[1]))
 
     # Draw the status bar
     pygame.draw.rect(screen, RED, (WIDTH - 110, 10, car_status, 20))
