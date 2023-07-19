@@ -5,7 +5,8 @@ import pygame
 import sys
 import random
 import platform
-
+# import subprocess
+from repair import repair
 WINDOW_WIDTH = 1024
 WINDOW_HEIGHT = 768
 
@@ -40,7 +41,8 @@ class Line:
 
         self.battery_z_pos : float = None
         self.battery_pos : float =  None
-
+        self.ret = None
+        
     def project(self, camX: int, camY: int, camZ: int):
         self.scale = camD / (self.z - camZ)
         self.X = (1 + self.scale * (self.x - camX)) * WINDOW_WIDTH / 2
@@ -77,18 +79,29 @@ class Line:
         draw_surface.blit(crop_surface, (destX, destY))
 
 
-def draw_car(draw_surface: pygame.Surface):
+def draw_car(draw_surface: pygame.Surface, isTent):
     car_sprite : pygame.Surface = "None"
-    car_sprite = pygame.image.load(f"images/R1T_white.png").convert_alpha()
-    
-    spriteW, spriteH = car_sprite.get_width(), car_sprite.get_height()
-    scale = 1.2
-    scaledW, scaledH = spriteW//scale, spriteH//scale
-    scaled_sprite = pygame.transform.scale(car_sprite, (scaledW, scaledH))
+    if(isTent):
+        car_sprite = pygame.image.load(f"images/R1T_Tent.png").convert_alpha()
+        spriteW, spriteH = car_sprite.get_width(), car_sprite.get_height()
+        scale = 1.6
+        scaledW, scaledH = spriteW//scale, spriteH//scale
+        scaled_sprite = pygame.transform.scale(car_sprite, (scaledW, scaledH))
 
-    carX = draw_surface.get_width()//2 - scaledW//2
-    carY = draw_surface.get_width()//2 - 100
-    draw_surface.blit(scaled_sprite, (carX, carY))
+        carX = draw_surface.get_width()//2 - scaledW//2 + 15
+        carY = draw_surface.get_width()//2 - 425
+        draw_surface.blit(scaled_sprite, (carX, carY))
+
+    else:
+        car_sprite = pygame.image.load(f"images/R1T_white.png").convert_alpha()
+        spriteW, spriteH = car_sprite.get_width(), car_sprite.get_height()
+        scale = 1.2
+        scaledW, scaledH = spriteW//scale, spriteH//scale
+        scaled_sprite = pygame.transform.scale(car_sprite, (scaledW, scaledH))
+
+        carX = draw_surface.get_width()//2 - scaledW//2
+        carY = draw_surface.get_width()//2 - 100
+        draw_surface.blit(scaled_sprite, (carX, carY))
 
 
 
@@ -248,6 +261,7 @@ class GameWindow:
             lines.append(line)
 
         N = len(lines)
+        isTent = False
         pos = 0
         playerX = 0  # player start at the center of the road
         playerY = 1000  # camera height offset
@@ -265,6 +279,8 @@ class GameWindow:
 
             speed = 0
             keys = pygame.key.get_pressed()
+            if keys[pygame.K_t]:
+                isTent = not isTent
             if keys[pygame.K_UP]:
                 if self.battery_level == 0:
                     continue
@@ -371,8 +387,20 @@ class GameWindow:
             for n in range(startPos + show_N_seg, startPos + 1, -1):
                 lines[n % N].drawSprite(self.window_surface)
 
-            draw_car(self.window_surface)
+            out_of_bounds = (playerX > 3000) or (playerX < -3000)
+            deployTent = out_of_bounds and isTent
+
+            draw_car(self.window_surface, deployTent)
             draw_battery(self.window_surface, self.battery_level, self.battery_max)
+            #print car position
+            # print(f"Car position: {playerX}, {playerY}")
+            if self.battery_level == 0:
+                # print(f"Car position: {playerX}, {playerY}")
+                self.ret = repair()
+                # self.ret = subprocess.Popen(["python", "./repair.py"])
+                # print(f"|-> Repairing cost {self.ret} seconds")
+                if self.ret is not None:
+                    self.battery_level = self.battery_max  # Or some code to reset the game state
 
             # Pick up Battery
             line_has_battery = lines[startPos % N].battery_pos != None
@@ -385,7 +413,7 @@ class GameWindow:
             prev_line_has_battery = line_has_battery
             pygame.display.update()
             self.clock.tick(60)
-
+            
 
 if __name__ == "__main__":
     game = GameWindow()
