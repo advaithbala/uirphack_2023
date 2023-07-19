@@ -3,6 +3,7 @@ import time
 from typing import List
 import pygame
 import sys
+import platform
 
 WINDOW_WIDTH = 1024
 WINDOW_HEIGHT = 768
@@ -97,7 +98,11 @@ class GameWindow:
         self.dt = 0
 
         # background
-        self.background_image = pygame.image.load("images/bg.png").convert_alpha()
+        if platform.system() == "Darwin":
+            self.background_image = pygame.image.load("images/bg.png").convert()
+        else: 
+            self.background_image = pygame.image.load("images/bg.png").convert_alpha()
+
         self.background_image = pygame.transform.scale(
             self.background_image, (WINDOW_WIDTH, self.background_image.get_height())
         )
@@ -119,7 +124,10 @@ class GameWindow:
         # sprites
         self.sprites: List[pygame.Surface] = []
         for i in range(1, 8):
-            self.sprites.append(pygame.image.load(f"images/{i}.png").convert_alpha())
+            if platform.system() == "Darwin":
+                self.sprites.append(pygame.image.load(f"images/{i}.png").convert())
+            else: 
+                self.sprites.append(pygame.image.load(f"images/{i}.png").convert_alpha())
 
     def run(self):
 
