@@ -109,7 +109,8 @@ def repair():
     mechanism_speed = 5
     opening_sentences = [
         "Unfortunately",
-        "Your car is damaged",
+        # "Your car is damaged",
+        "Running out battery caused some damage",
         "But no worries",
         "Let's fix it ASAP",
         "Don't forget the clock is ticking."
