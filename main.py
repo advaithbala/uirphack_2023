@@ -109,6 +109,22 @@ def draw_car(draw_surface: pygame.Surface, isTent):
 
 
 
+def draw_distance(draw_surface: pygame.Surface, distance):
+
+    font = pygame.font.Font('freesansbold.ttf', 32)
+    text = font.render("Distance: ", True, (0, 150, 0), None)
+    textRect = text.get_rect()
+    textX = 400
+    textY = 150
+    textRect.center = (textX, textY)  
+    draw_surface.blit(text, textRect)
+
+    # Format distance as 0.00 km
+    distance_text = str(distance//100) + " m"
+    distance_display = font.render(distance_text, True, (0, 150, 0))
+    distance_rect = distance_display.get_rect(center=(textX + 150, textY))
+    draw_surface.blit(distance_display, distance_rect)
+
 def draw_battery(draw_surface: pygame.Surface, battery_level, battery_max):
 
 
@@ -130,6 +146,25 @@ def draw_battery(draw_surface: pygame.Surface, battery_level, battery_max):
     textY = batteryY + batteryH // 2
     textRect.center = (textX, textY)  
     draw_surface.blit(text, textRect)
+
+def draw_timer(draw_surface: pygame.Surface, time_left):
+    font = pygame.font.Font('freesansbold.ttf', 32)
+    text = font.render("Time: ", True, (0, 150, 0), None)
+    textRect = text.get_rect()
+    textX = 400
+    textY = 100
+    textRect.center = (textX, textY)  
+    draw_surface.blit(text, textRect)
+
+    # Calculate minutes and seconds from time_left
+    minutes = time_left // 60
+    seconds = time_left % 60
+
+    # Format time as MM:SS
+    time_text = f"{minutes:02}:{seconds:02}"
+    time_display = font.render(time_text, True, (0, 150, 0))
+    time_rect = time_display.get_rect(center=(textX + 100, textY))
+    draw_surface.blit(time_display, time_rect)
 
 
 def drawQuad(
@@ -260,15 +295,19 @@ class GameWindow:
                 line.spriteX = -1.2
                 line.sprite = self.sprites[6]
 
-            if i % (70) == 0 or i % (120) == 0:
-                line.spriteX = random.uniform(-3, 2)
-                line.battery_pos = line.spriteX
-                line.sprite = self.sprites[7]
+
             if i % (50) == 0 or i % 65 == 0:
                 if random.random() < 0.55:  # 1% chance to place a Tesla on each line
                     line.spriteX = random.uniform(-3, 2)  # Random position on the road
                     line.sprite = self.tesla
                     line.tesla_pos = line.spriteX
+            if i % (70) == 0 or i % (120) == 0:
+                random_battery_pos = random.uniform(-3, 2)
+                line.spriteX = random_battery_pos
+                line.battery_pos = line.spriteX
+                line.sprite = self.sprites[7]
+                for prev_line in lines[-2:]:
+                    prev_line.battery_pos = random_battery_pos
 
             lines.append(line)
 
@@ -280,7 +319,14 @@ class GameWindow:
         prev_line_has_battery = False
         prev_line_has_tesla = False
 
+        # Set timer duration (in seconds)
+        timer_duration = 3 * 60  # 3 minutes
+        start_time = time.time()
+
         while True:
+
+            out_of_bounds = (playerX > 3000) or (playerX < -3000)
+
             self.dt = time.time() - self.last_time
             self.last_time = time.time()
             self.window_surface.fill((105, 205, 4))
@@ -294,11 +340,18 @@ class GameWindow:
             keys = pygame.key.get_pressed()
             if keys[pygame.K_t]:
                 isTent = not isTent
+
             if keys[pygame.K_UP]:
                 if self.battery_level == 0:
                     continue
-                speed += segL  # it has to be N integer times the segment length
-                self.battery_level = max(0, self.battery_level - 10)
+                if(out_of_bounds):
+                    speed += segL # it has to be N integer times the segment length
+                    self.battery_level = max(0, self.battery_level - 2)
+                else:   
+                    speed += (segL * 2) # it has to be N integer times the segment length
+                    self.battery_level = max(0, self.battery_level - 10)
+
+
             if keys[pygame.K_DOWN]:
                 if self.battery_level == 0:
                     continue              
@@ -306,11 +359,11 @@ class GameWindow:
             if keys[pygame.K_RIGHT]:
                 if self.battery_level == 0:
                     continue
-                playerX += 100
+                playerX += 50
             if keys[pygame.K_LEFT]:
                 if self.battery_level == 0:
                     continue
-                playerX -= 100
+                playerX -= 50
             if keys[pygame.K_w]:
                 playerY += 100
             if keys[pygame.K_s]:
@@ -322,6 +375,7 @@ class GameWindow:
             if keys[pygame.K_TAB]:
                 speed *= 2  # it has to be N integer times the segment length
                 self.battery_level = max(0, self.battery_level - 30)
+
             pos += speed
 
             # loop the circut from start to finish
@@ -400,11 +454,27 @@ class GameWindow:
             for n in range(startPos + show_N_seg, startPos + 1, -1):
                 lines[n % N].drawSprite(self.window_surface)
 
-            out_of_bounds = (playerX > 3000) or (playerX < -3000)
-            deployTent = out_of_bounds and isTent
-
-            draw_car(self.window_surface, deployTent)
+            draw_car(self.window_surface, out_of_bounds)
             draw_battery(self.window_surface, self.battery_level, self.battery_max)
+
+            draw_distance(self.window_surface, pos)
+
+            # Calculate time left
+            elapsed_time = time.time() - start_time
+            time_left = max(timer_duration - int(elapsed_time), 0)
+
+            draw_timer(self.window_surface, time_left)
+            pygame.display.update()
+
+            #print car position
+            # print(f"Car position: {playerX}, {playerY}")
+            if self.battery_level == 0:
+                # print(f"Car position: {playerX}, {playerY}")
+                self.ret = repair()
+                # self.ret = subprocess.Popen(["python", "./repair.py"])
+                # print(f"|-> Repairing cost {self.ret} seconds")
+                if self.ret is not None:
+                    self.battery_level = self.battery_max  # Or some code to reset the game state
 
             # Pick up Battery
             line_has_battery = lines[startPos % N].battery_pos != None
@@ -436,8 +506,9 @@ class GameWindow:
             prev_line_has_battery = line_has_battery
             pygame.display.update()
             self.clock.tick(60)
-            
 
+
+            
 if __name__ == "__main__":
     game = GameWindow()
     game.run()
