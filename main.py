@@ -39,7 +39,10 @@ class Line:
         self.rumble_color: pygame.Color = "black"
         self.road_color: pygame.Color = "black"
 
+        self.battery_z_pos : float = None
+        self.battery_pos : float =  None
         self.ret = None
+        
     def project(self, camX: int, camY: int, camZ: int):
         self.scale = camD / (self.z - camZ)
         self.X = (1 + self.scale * (self.x - camX)) * WINDOW_WIDTH / 2
@@ -139,6 +142,16 @@ def drawQuad(
         surface, color, [(x1 - w1, y1), (x2 - w2, y2), (x2 + w2, y2), (x1 + w1, y1)]
     )
 
+def map_value(value, leftMin, leftMax, rightMin, rightMax):
+    # Figure out how 'wide' each range is
+    leftSpan = leftMax - leftMin
+    rightSpan = rightMax - rightMin
+
+    # Convert the left range into a 0-1 range (float)
+    valueScaled = float(value - leftMin) / float(leftSpan)
+
+    # Convert the 0-1 range into a value in the right range.
+    return rightMin + (valueScaled * rightSpan)
 
 class GameWindow:
     def __init__(self):
@@ -184,6 +197,9 @@ class GameWindow:
                 self.sprites.append(pygame.image.load(f"images/{i}.png").convert())
             else: 
                 self.sprites.append(pygame.image.load(f"images/{i}.png").convert_alpha())
+
+
+    prevPlayerX = 0
 
     def run(self):
 
@@ -237,8 +253,9 @@ class GameWindow:
                 line.spriteX = -1.2
                 line.sprite = self.sprites[6]
 
-            if i % 150 == 0:
-                line.spriteX = random.uniform(-1, 1)
+            if i % (150) == 0:
+                line.spriteX = random.uniform(-3, 2)
+                line.battery_pos = line.spriteX
                 line.sprite = self.sprites[7]
 
             lines.append(line)
@@ -248,6 +265,7 @@ class GameWindow:
         pos = 0
         playerX = 0  # player start at the center of the road
         playerY = 1000  # camera height offset
+        prev_line_has_battery = False
 
         while True:
             self.dt = time.time() - self.last_time
@@ -275,11 +293,11 @@ class GameWindow:
             if keys[pygame.K_RIGHT]:
                 if self.battery_level == 0:
                     continue
-                playerX += 200
+                playerX += 100
             if keys[pygame.K_LEFT]:
                 if self.battery_level == 0:
                     continue
-                playerX -= 200
+                playerX -= 100
             if keys[pygame.K_w]:
                 playerY += 100
             if keys[pygame.K_s]:
@@ -384,6 +402,15 @@ class GameWindow:
                 if self.ret is not None:
                     self.battery_level = self.battery_max  # Or some code to reset the game state
 
+            # Pick up Battery
+            line_has_battery = lines[startPos % N].battery_pos != None
+            if not prev_line_has_battery and line_has_battery:
+                battery_pos = lines[startPos % N].battery_pos
+                battery_abs_pos = map_value(battery_pos, -3, 2, -1900, 1900)
+                if abs (battery_abs_pos - playerX) < 400:
+                    self.battery_level = min(self.battery_max, self.battery_level + 1500)
+
+            prev_line_has_battery = line_has_battery
             pygame.display.update()
             self.clock.tick(60)
             
