@@ -592,7 +592,7 @@ class GameWindow:
                     battery_pos = lines[startPos % N].battery_pos
                     battery_abs_pos = map_value(battery_pos, -3, 2, -1900, 1900)
                     if abs (battery_abs_pos - playerX) < 400:
-                        self.battery_level = min(self.battery_max, self.battery_level + 800)
+                        self.battery_level = min(self.battery_max, self.battery_level + 500)
 
                 # Collide with tesla
                 line_has_tesla = lines[startPos % N].tesla_pos != None
