@@ -155,7 +155,7 @@ def repair():
                             print("Congratulations! You completed the task in", round(time_taken, 2), "seconds.")
                             mechanism_leaving = True
                             game_ended = True
-                            return round(time_taken, 2)
+                            
                 dragging = None
 
         # Draw the background
@@ -263,8 +263,7 @@ def repair():
                     dialogue_text = dialogue_text_font.render(text, True, BLACK)
                     dialogue_text_rect = dialogue_text.get_rect(center=dialogue_window_rect.center)
                 elif sentence_index == len(opening_sentences) + len(closing_sentences):
-                    pygame.quit()
-                    sys.exit()
+                    return round(time_taken, 2)
         # Draw the timer at the top right
         if game_started and not game_ended:
             current_time = round(time.time() - start_time, 2)
