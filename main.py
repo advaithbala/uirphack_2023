@@ -6,6 +6,7 @@ import sys
 import os
 import random
 import platform
+import subprocess
 # import subprocess
 from repair import repair
 WINDOW_WIDTH = 1024
@@ -207,7 +208,7 @@ class GameWindow:
         self.game_ended = False
         self.tesla = pygame.transform.scale(pygame.image.load("./static/tesla.png"), (150, 100))
         self.flame = pygame.transform.scale(pygame.image.load("./static/flame.png"), (150, 100))
-        self.timer_duration = 2 * 60 # 2 minutes
+        self.timer_duration = 10 # 2 minutes
         self.time_left = self.timer_duration
         self.distance = 0 
 
@@ -431,9 +432,18 @@ class GameWindow:
                 if event.type == pygame.MOUSEBUTTONUP and self.game_ended:
                     mouse_pos = pygame.mouse.get_pos()
                     if self.play_again_rect.collidepoint(mouse_pos):
-                        pygame.quit()
-                        python = sys.executable
-                        os.execl(python, python, * sys.argv)
+                            if platform.system() == 'Windows':
+                                # For Windows, use subprocess.Popen to restart the program
+                                python = sys.executable
+                                subprocess.Popen([python] + sys.argv)
+                                sys.exit()
+                            elif platform.system() == 'Darwin':  # 'Darwin' is the platform name for Mac
+                                # For Mac, use os.execl to restart the program
+                                python = sys.executable
+                                os.execl(python, python, *sys.argv)
+                            else:
+                                print("Unsupported platform. Exiting.")
+                                sys.exit()
 
             if self.time_left == 0:
                 self.game_ended = True
