@@ -89,7 +89,7 @@ def repair(time_left):
     score = 0
 
     # Set the target score
-    target_score = 10
+    target_score = 30
 
     # Set up timer
     local_time_stamp = None
