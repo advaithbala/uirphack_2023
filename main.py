@@ -609,7 +609,6 @@ class GameWindow:
                 if not prev_line_has_tesla and line_has_tesla:
                     tesla_pos = lines[startPos % N].tesla_pos
                     tesla_abs_pos = map_value(tesla_pos, -2, 1, -1650, 1725)
-                    print(playerX, tesla_abs_pos)
                     if abs (tesla_abs_pos - (playerX)) < 800:
                         #show the flame here
                         self.crashed_CD = 5 
