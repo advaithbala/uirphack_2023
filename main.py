@@ -2,6 +2,7 @@ import math
 import time
 from typing import List
 import pygame
+import pygame.mixer
 import sys
 import os
 import random
@@ -195,6 +196,7 @@ def map_value(value, leftMin, leftMax, rightMin, rightMax):
 
 class GameWindow:
     def __init__(self):
+
         pygame.init()
         pygame.display.set_caption("Rivian Adventure")
         self.window_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -208,9 +210,17 @@ class GameWindow:
         self.game_ended = False
         self.tesla = pygame.transform.scale(pygame.image.load("./static/tesla.png"), (150, 100))
         self.flame = pygame.transform.scale(pygame.image.load("./static/flame.png"), (150, 100))
-        self.timer_duration = 10 # 2 minutes
+        self.timer_duration = 2 * 60 # 2 minutes
         self.time_left = self.timer_duration
         self.distance = 0 
+
+        # Load the background music
+        pygame.mixer.init()
+        # Load the background music as a Sound object
+        background_music = pygame.mixer.Sound("background_music.wav")
+
+        # Play the background music
+        background_music.play(-1)  # -1 means loop indefinitely
 
         # background
         if platform.system() == "Darwin":
