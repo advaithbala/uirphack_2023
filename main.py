@@ -208,7 +208,7 @@ class GameWindow:
         self.game_ended = False
         self.tesla = pygame.transform.scale(pygame.image.load("./static/tesla.png"), (150, 100))
         self.flame = pygame.transform.scale(pygame.image.load("./static/flame.png"), (150, 100))
-        self.timer_duration = 10 # 2 minutes
+        self.timer_duration = 2*60 # 2 minutes
         self.time_left = self.timer_duration
         self.distance = 0 
 
