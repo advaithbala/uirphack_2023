@@ -2,10 +2,12 @@ import math
 import time
 from typing import List
 import pygame
+import pygame.mixer
 import sys
 import os
 import random
 import platform
+import subprocess
 # import subprocess
 from repair import repair
 WINDOW_WIDTH = 1024
@@ -194,6 +196,7 @@ def map_value(value, leftMin, leftMax, rightMin, rightMax):
 
 class GameWindow:
     def __init__(self):
+
         pygame.init()
         pygame.display.set_caption("Rivian Adventure")
         self.window_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -210,6 +213,14 @@ class GameWindow:
         self.timer_duration = 2 * 60 # 2 minutes
         self.time_left = self.timer_duration
         self.distance = 0 
+
+        # Load the background music
+        pygame.mixer.init()
+        # Load the background music as a Sound object
+        background_music = pygame.mixer.Sound("background_music.wav")
+
+        # Play the background music
+        background_music.play(-1)  # -1 means loop indefinitely
 
         # background
         if platform.system() == "Darwin":
@@ -393,7 +404,7 @@ class GameWindow:
 
             if i % (50) == 0 or i % 65 == 0:
                 if random.random() < 0.55:  # 1% chance to place a Tesla on each line
-                    line.spriteX = random.uniform(-3, 2)  # Random position on the road
+                    line.spriteX = random.uniform(-2, 1)  # Random position on the road
                     line.sprite = self.tesla
                     line.tesla_pos = line.spriteX
             if i % (70) == 0 or i % (120) == 0:
@@ -431,9 +442,18 @@ class GameWindow:
                 if event.type == pygame.MOUSEBUTTONUP and self.game_ended:
                     mouse_pos = pygame.mouse.get_pos()
                     if self.play_again_rect.collidepoint(mouse_pos):
-                        pygame.quit()
-                        python = sys.executable
-                        os.execl(python, python, * sys.argv)
+                            if platform.system() == 'Windows':
+                                # For Windows, use subprocess.Popen to restart the program
+                                python = sys.executable
+                                subprocess.Popen([python] + sys.argv)
+                                sys.exit()
+                            elif platform.system() == 'Darwin':  # 'Darwin' is the platform name for Mac
+                                # For Mac, use os.execl to restart the program
+                                python = sys.executable
+                                os.execl(python, python, *sys.argv)
+                            else:
+                                print("Unsupported platform. Exiting.")
+                                sys.exit()
 
             if self.time_left == 0:
                 self.game_ended = True
@@ -601,15 +621,15 @@ class GameWindow:
                 if not prev_line_has_battery and line_has_battery:
                     battery_pos = lines[startPos % N].battery_pos
                     battery_abs_pos = map_value(battery_pos, -3, 2, -1900, 1900)
-                    if abs (battery_abs_pos - playerX) < 400:
+                    if abs (battery_abs_pos - playerX) < 700:
                         self.battery_level = min(self.battery_max, self.battery_level + 500)
 
                 # Collide with tesla
                 line_has_tesla = lines[startPos % N].tesla_pos != None
                 if not prev_line_has_tesla and line_has_tesla:
                     tesla_pos = lines[startPos % N].tesla_pos
-                    tesla_abs_pos = map_value(tesla_pos, -3, 2, -1900, 1900)
-                    if abs (tesla_abs_pos - (playerX)) < 500:
+                    tesla_abs_pos = map_value(tesla_pos, -2, 1, -1650, 1725)
+                    if abs (tesla_abs_pos - (playerX)) < 800:
                         #show the flame here
                         self.crashed_CD = 5 
                         self.window_surface.blit(self.flame, (WINDOW_WIDTH//2 - 50, WINDOW_HEIGHT//2 - 50))
