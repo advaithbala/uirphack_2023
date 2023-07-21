@@ -7,8 +7,6 @@ Team Name: Rivian R1S
 
 Team Members: Asher Mai, Advaith Bala, David Chen
 
-This game is built on top of [Racing Pseudo 3D in Python](https://github.com/brccabral/RacingPseudo3DPython)
-
 ![](images/demo.GIF)
 
 ## Youtube Demo:
@@ -66,3 +64,9 @@ When you run out of battery due to long trips without a charge or frequent crash
 ### Scoring
 
 You have a limited amount of time to try to get as far of a distance as possible. Try to avoid Tesla vehicles, get charged frequently, and use off-road and Turbo mode resourcefully.
+
+### Acknowledgements
+
+This game is built on top of [Racing Pseudo 3D in Python](https://github.com/brccabral/RacingPseudo3DPython)
+
+Music: [Casiopea - Swallow (8-bit cover) ](https://www.youtube.com/watch?v=vHpyOOQD8vE&pp=ygUWY2FzaW9wZWEgc3dhbGxvdyA4IGJpdA%3D%3D)
