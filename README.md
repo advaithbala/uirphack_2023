@@ -32,7 +32,14 @@ To start the game:
 python3 main.py    
 ```
 ### Basic Controls
-Use arrow keys to control the movement of Rivian R1T
+
+🚀 **Move/Accelerate**: Use the **Up Arrow** key to move forward and speed up.
+
+🚗 **Steer Sideways**: Use the **Left/Right Arrow** keys to steer your vehicle sideways.
+
+⚡ **Turbo Mode**: Press the **Tab** key to activate Turbo Mode and boost your speed!
+
+🖱️ **Rivian Service Center**: Interact with the **mouse** to drag and drop items at the Rivian Service Center.
 
 ### Charging and discharging
 
